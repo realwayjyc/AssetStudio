@@ -1,0 +1,111 @@
+﻿<UserControl x:Class="UnityAnalyzer.LightPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Enabled:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Text="True" Name="txtEnabled" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="0" Grid.Column="1" Content="Light Type:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="" Name="txtLightType"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Color(RGBA):" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Text="" Name="txtColor"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="1" Content="Intensity:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="True" Name="txtIntensity"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Content="range:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="0" Text="" Name="txtRange"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="1" Content="Spot Angle:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="True" Name="txtSpotAngle"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="0" Content="Cookie Size:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="0" Text="" Name="txtCookieSize"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="1" Content="Shadow Type:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="True" Name="txtShadowType"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="4" Grid.Column="0" Content="Resolution:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="4" Grid.Column="0" Text="" Name="txtResolution"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="4" Grid.Column="1" Content="CullingMask:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <Button Grid.Row="4" Grid.Column="1" Content="Mask Dialog" Name="txtCullingMask"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center" Click="txtCullingMask_Click"/>
+
+        <Label Grid.Row="5" Grid.Column="0" Content="Strength:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="0" Text="" Name="txtStrength"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="5" Grid.Column="1" Content="Bias:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Text="True" Name="txtBias"  Margin="151,0,0,0.2" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="6" Grid.Column="0" Content="Softness:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="0" Text="" Name="txtSoftness"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="6" Grid.Column="1" Content="Softness Fade:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="1" Text="True" Name="txtSoftnessFade"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="7" Grid.Column="0" Content="Cookie:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="7" Grid.Column="0" Text="" Name="txtCookie"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="7" Grid.Column="1" Content="Draw Halo:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="7" Grid.Column="1" Text="" Name="txtDrawHalo"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="8" Grid.Column="0" Content="Actually Light mapped:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="8" Grid.Column="0" Text="" Name="txtActuallyLightmapped"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="8" Grid.Column="1" Content="Flare:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="8" Grid.Column="1" Text="True" Name="txtFlare"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="9" Grid.Column="0" Content="Render Mode:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="9" Grid.Column="0" Text="" Name="txtRenderMode"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="9" Grid.Column="1" Content="Light Mapping:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="9" Grid.Column="1" Text="True" Name="txtLightMapping"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+        <Label Grid.Row="10" Grid.Column="0" Content="Shadow Samples:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="10" Grid.Column="0" Text="" Name="txtshadowSamples"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="10" Grid.Column="1" Content="Shadow Radius:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="10" Grid.Column="1" Text="True" Name="txtShadowRadius"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+        <Label Grid.Row="11" Grid.Column="0" Content="Shadow Angle:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="11" Grid.Column="0" Text="" Name="txtShadowAngle"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="11" Grid.Column="1" Content="Indirect Intensity:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="11" Grid.Column="1" Text="True" Name="txtIndirectIntensity"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+        <Label Grid.Row="12" Grid.Column="0" Content="Area Size Width:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="12" Grid.Column="0" Text="" Name="txtAreaSizeWidth"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="12" Grid.Column="1" Content="Area Size Height:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="12" Grid.Column="1" Text="True" Name="txtAreaSizeHeight"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+    </Grid>
+</UserControl>

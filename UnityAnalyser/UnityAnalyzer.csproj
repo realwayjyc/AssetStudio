@@ -1,0 +1,497 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5A3B0C53-0FE0-4760-AB6F-7CECA1DD88A8}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UnityAnalyzer</RootNamespace>
+    <AssemblyName>UnityAnalyzer</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <ApplicationIcon>main.ico</ApplicationIcon>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>.\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Analyser.cs" />
+    <Compile Include="DgObjectItem.cs" />
+    <Compile Include="GameObjectDatagrid.xaml.cs">
+      <DependentUpon>GameObjectDatagrid.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GameObjectTraceGraph.xaml.cs">
+      <DependentUpon>GameObjectTraceGraph.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MaskedLayers.cs" />
+    <Compile Include="Matrix44f.cs" />
+    <Compile Include="ObjectPanel\AnimationClipPanel.xaml.cs">
+      <DependentUpon>AnimationClipPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\AnimatorControllerPanel.xaml.cs">
+      <DependentUpon>AnimatorControllerPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\AnimatorPanel.xaml.cs">
+      <DependentUpon>AnimatorPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\AudioClipPanel.xaml.cs">
+      <DependentUpon>AudioClipPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\AudioSourcePanel.xaml.cs">
+      <DependentUpon>AudioSourcePanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\CameraPanel.xaml.cs">
+      <DependentUpon>CameraPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\CanvasPanel.xaml.cs">
+      <DependentUpon>CanvasPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\CanvasRendererPanel.xaml.cs">
+      <DependentUpon>CanvasRendererPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\CubemapPanel.xaml.cs">
+      <DependentUpon>CubemapPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\CullingMaskWnd.xaml.cs">
+      <DependentUpon>CullingMaskWnd.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\EllipsoidParticleEmitterPanel.xaml.cs">
+      <DependentUpon>EllipsoidParticleEmitterPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\GameObjectPanel.xaml.cs">
+      <DependentUpon>GameObjectPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\GeneralObjectPanel.xaml.cs">
+      <DependentUpon>GeneralObjectPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\LightPanel.xaml.cs">
+      <DependentUpon>LightPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\MaterialPanel.xaml.cs">
+      <DependentUpon>MaterialPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\MeshFilterPanel.xaml.cs">
+      <DependentUpon>MeshFilterPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\MeshRendererPanel.xaml.cs">
+      <DependentUpon>MeshRendererPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\MonoScriptPanel.xaml.cs">
+      <DependentUpon>MonoScriptPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\ParticleAnimatorPanel.xaml.cs">
+      <DependentUpon>ParticleAnimatorPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\ParticleEmitterPanel.xaml.cs">
+      <DependentUpon>ParticleEmitterPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\ParticleRendererPanel.xaml.cs">
+      <DependentUpon>ParticleRendererPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\RectTransformPanel.xaml.cs">
+      <DependentUpon>RectTransformPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\RendererPanel.xaml.cs">
+      <DependentUpon>RendererPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\SpriteRendererPanel.xaml.cs">
+      <DependentUpon>SpriteRendererPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\UVAnimationPanel.xaml.cs">
+      <DependentUpon>UVAnimationPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ScriptFields\ButtonSFVS.cs" />
+    <Compile Include="ScriptFields\CanvasScalerSFVS.cs" />
+    <Compile Include="ScriptFields\ContentSizeFitterSFVS.cs" />
+    <Compile Include="ScriptFields\EventSystemSFVS.cs" />
+    <Compile Include="ScriptFields\EventTriggerSFVS.cs" />
+    <Compile Include="ScriptFields\GraphicRayCasterSFVS.cs" />
+    <Compile Include="ScriptFields\ImageSFVS.cs" />
+    <Compile Include="ScriptFields\InputFieldSFVS.cs" />
+    <Compile Include="ScriptFields\LayoutElementSFVS.cs" />
+    <Compile Include="ScriptFields\MaskSFVS.cs" />
+    <Compile Include="ScriptFields\OutlineSFVS.cs" />
+    <Compile Include="ScriptFields\ScorllBarSFVS.cs" />
+    <Compile Include="ScriptFields\ScriptFieldMultiValue.cs" />
+    <Compile Include="ScriptFields\ScriptFieldsPanel.xaml.cs">
+      <DependentUpon>ScriptFieldsPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ScriptFields\ScriptFieldValueSet.cs" />
+    <Compile Include="ScriptFields\ScrollRectSFVS.cs" />
+    <Compile Include="ScriptFields\ShadowSFVS.cs" />
+    <Compile Include="ScriptFields\SliderSFVS.cs" />
+    <Compile Include="ScriptFields\StandaloneInputModuleSFVS.cs" />
+    <Compile Include="ScriptFields\TextSVFS.cs" />
+    <Compile Include="ScriptFields\ToggleGroupSFVS.cs" />
+    <Compile Include="ScriptFields\ToggleSFVS.cs" />
+    <Compile Include="ScriptFields\TouchInputModuleSFVS.cs" />
+    <Compile Include="ScriptFields\VerticalLayoutGroupSFVS.cs" />
+    <Compile Include="UnityObject\AnimationClip.cs" />
+    <Compile Include="UnityObject\Animator.cs" />
+    <Compile Include="UnityObject\AnimatorController.cs" />
+    <Compile Include="UnityObject\AudioClip.cs" />
+    <Compile Include="UnityObject\AudioSource.cs" />
+    <Compile Include="UnityObject\BlendShapeData.cs" />
+    <Compile Include="UnityObject\BoneInfluence.cs" />
+    <Compile Include="UnityObject\BoxCollider.cs" />
+    <Compile Include="UnityObject\ChannelInfo.cs" />
+    <Compile Include="UnityObject\Cubemap.cs" />
+    <Compile Include="UnityObject\EllipsoidParticleEmitter.cs" />
+    <Compile Include="UnityObject\Light.cs" />
+    <Compile Include="UnityObject\Mesh.cs" />
+    <Compile Include="UnityObject\MeshFilter.cs" />
+    <Compile Include="UnityObject\MeshRenderer.cs" />
+    <Compile Include="UnityObject\ParticleAnimator.cs" />
+    <Compile Include="UnityObject\ParticleEmitter.cs" />
+    <Compile Include="UnityObject\ParticleRenderer.cs" />
+    <Compile Include="UnityObject\PlayerSettings.cs" />
+    <Compile Include="UnityObject\Renderer.cs" />
+    <Compile Include="ObjectPanel\ScriptRefPanel.xaml.cs">
+      <DependentUpon>ScriptRefPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\ShaderPanel.xaml.cs">
+      <DependentUpon>ShaderPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\SpritePanel.xaml.cs">
+      <DependentUpon>SpritePanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\SpriteRenderDataPanel.xaml.cs">
+      <DependentUpon>SpriteRenderDataPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\TagManagerPanel.xaml.cs">
+      <DependentUpon>TagManagerPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\Texture2DPanel.xaml.cs">
+      <DependentUpon>Texture2DPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\TransformPanel.xaml.cs">
+      <DependentUpon>TransformPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectPanel\UnityPropertySheetPanel.xaml.cs">
+      <DependentUpon>UnityPropertySheetPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UnityFile\AssetsFile.cs" />
+    <Compile Include="UnityFile\UnityFile.cs" />
+    <Compile Include="UnityFile\UnityFileType.cs" />
+    <Compile Include="UnityObject\Camera.cs" />
+    <Compile Include="UnityObject\Canvas.cs" />
+    <Compile Include="UnityObject\CanvasRenderer.cs" />
+    <Compile Include="UnityObject\Component.cs" />
+    <Compile Include="UnityObject\Material.cs" />
+    <Compile Include="UnityObject\MonoScript.cs" />
+    <Compile Include="UnityObject\RectTransform.cs" />
+    <Compile Include="UnityObject\RigidBody.cs" />
+    <Compile Include="UnityObject\ScriptRef.cs" />
+    <Compile Include="UnityObject\ScriptRefInfo.cs" />
+    <Compile Include="UnityObject\SerializedObjectIdentifier.cs" />
+    <Compile Include="UnityObject\Shader.cs" />
+    <Compile Include="UnityObject\Sprite.cs" />
+    <Compile Include="UnityObject\SpriteRenderData.cs" />
+    <Compile Include="UnityObject\SpriteRenderer.cs" />
+    <Compile Include="UnityObject\StreamInfo.cs" />
+    <Compile Include="UnityObject\SubMesh.cs" />
+    <Compile Include="UnityObject\TagManager.cs" />
+    <Compile Include="UnityObject\Texture2D.cs" />
+    <Compile Include="UnityObject\Transform.cs" />
+    <Compile Include="UnityObject\UnityPropertySheet.cs" />
+    <Compile Include="UnityObject\UVAnimation.cs" />
+    <Compile Include="UnityObject\VertexData.cs" />
+    <Compile Include="ValueConverter.cs" />
+    <Compile Include="Vector2f.cs" />
+    <Compile Include="Vector3f.cs" />
+    <Compile Include="Vector4f.cs" />
+    <Compile Include="Vertex3f.cs" />
+    <Page Include="Dictionary1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GameObjectDatagrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GameObjectTraceGraph.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\AnimationClipPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\AnimatorControllerPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\AnimatorPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\AudioClipPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\AudioSourcePanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\CameraPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\CanvasPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\CanvasRendererPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\CubemapPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\CullingMaskWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\EllipsoidParticleEmitterPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\GameObjectPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="ObjectPanel\GeneralObjectPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\LightPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\MaterialPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\MeshFilterPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\MeshRendererPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\MonoScriptPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\ParticleAnimatorPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\ParticleEmitterPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\ParticleRendererPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\RectTransformPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\RendererPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\ScriptRefPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\ShaderPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\SpritePanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\SpriteRenderDataPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\SpriteRendererPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\TagManagerPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\Texture2DPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\TransformPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\UnityPropertySheetPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\UVAnimationPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ScriptFields\ScriptFieldsPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ClassIDType.cs" />
+    <Compile Include="UnityObject\GameObject.cs" />
+    <Compile Include="UnityObject\UnityObjectInfo.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="UnityObject\UnityObject.cs" />
+    <Compile Include="Util.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="main.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

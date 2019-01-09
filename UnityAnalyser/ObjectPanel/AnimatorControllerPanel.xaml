@@ -1,0 +1,110 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:UnityAnalyzer" x:Class="UnityAnalyzer.AnimatorControllerPanel" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="1000">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/UnityAnalyzer;component/Dictionary1.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" Grid.Column="0" Content="AnimatorController name:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Text="True" x:Name="txtAnimatorControllerName" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TabControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+            <TabItem Header="Layers">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="61.8"/>
+                        <ColumnDefinition Width="138.2"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TreeView MouseRightButtonDown="TvMouseRightDown"  x:Name="tvLayers"  SelectedItemChanged="tvLayers_SelectedItemChanged" Grid.ColumnSpan="2" Margin="0,0,0,0.4">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate  ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Height="20">
+                                    <StackPanel.ToolTip>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="200"  />
+                                    </StackPanel.ToolTip>
+                                    <TextBlock VerticalAlignment="Center" x:Name="nodeName" Text="{Binding DisplayName}" Foreground="{Binding ItemColor}"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Grid>
+            </TabItem>
+            <TabItem Header="States">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TreeView MouseRightButtonDown="TvMouseRightDown"  x:Name="tvStates"  SelectedItemChanged="tvStates_SelectedItemChanged" Grid.ColumnSpan="2" Margin="0,0,0,0.4">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate  ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Height="20">
+                                    <StackPanel.ToolTip>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="200"  />
+                                    </StackPanel.ToolTip>
+                                    <TextBlock VerticalAlignment="Center" x:Name="nodeName" Text="{Binding DisplayName}" Foreground="{Binding ItemColor}"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                    <local:GeneralObjectPanel x:Name="generalObjectPanel" Grid.Column="1"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Variables">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TreeView MouseRightButtonDown="TvMouseRightDown"  x:Name="tvVariables"  SelectedItemChanged="tvVariables_SelectedItemChanged" Grid.ColumnSpan="2" Margin="0,0,0,0.4">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate  ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Height="20">
+                                    <StackPanel.ToolTip>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="200"  />
+                                    </StackPanel.ToolTip>
+                                    <TextBlock VerticalAlignment="Center" x:Name="nodeName" Text="{Binding DisplayName}" Foreground="{Binding ItemColor}"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                    <local:GeneralObjectPanel x:Name="generalObjectPanelParam" Grid.Column="1"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</UserControl>

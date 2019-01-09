@@ -1,0 +1,69 @@
+﻿<UserControl x:Class="UnityAnalyzer.ParticleAnimatorPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" Grid.Column="0" Content="Does animator color:" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Text="" x:Name="txtDoesAnimatorColor"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="0" Grid.Column="1" Content="Color animation[0]  (RGBA):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="" x:Name="txtColorAnimation0"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Color animation[1]  (RGBA):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Text="" x:Name="txtColorAnimation1"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="1" Content="Color animation[2]  (RGBA):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="" x:Name="txtColorAnimation2"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Content="Color animation[3]  (RGBA):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="0" Text="" x:Name="txtColorAnimation3"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="1" Content="Color animation[4]  (RGBA):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="" x:Name="txtColorAnimation4"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="0" Content="World rotation axis (XYZ):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="0" Text="" x:Name="txtWorldRotationAxis"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="1" Content="Local rotation axis (XYZ):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="" x:Name="txtLocalRotationAxis"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="4" Grid.Column="0" Content="Size grow:" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="4" Grid.Column="0" Text="" x:Name="txtSizeGrow"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="4" Grid.Column="1" Content="Damping:" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="" x:Name="txtDamping"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="5" Grid.Column="0" Content="Rnd force (XYZ):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="0" Text="" x:Name="txtRndForce"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="5" Grid.Column="1" Content="Force (XYZ):" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Text="" x:Name="txtForce"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+        <Label Grid.Row="6" Grid.Column="0" Content="Stop simulation:" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="0" Text="" x:Name="txtStopSimulation"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="6" Grid.Column="1" Content="Auto destruct:" Width="180" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="1" Text="" x:Name="txtAutoDestruct"  Margin="180,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+    </Grid>
+</UserControl>

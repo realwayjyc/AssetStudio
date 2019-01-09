@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="UnityAnalyzer.ShaderPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Shader name:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Text="True" Name="txtShaderName" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Path name:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Text="" Name="txtPathName"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="1" Content="Dependencies count:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="True" Name="txtDependenciesCount"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="0" Grid.Column="1" Content="Is baked:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="" Name="txtIsBaked"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        
+        <Button Name="btnSave" Grid.Row="2" Width="100" Content="Save" HorizontalAlignment="left" Height="25" Click="btnSave_Click"></Button>
+        <TextBox Grid.Row="3" Name="txtSourceCode" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+    </Grid>
+</UserControl>

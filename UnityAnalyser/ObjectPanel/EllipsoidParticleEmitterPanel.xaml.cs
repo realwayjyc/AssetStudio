@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace UnityAnalyzer
+{
+    /// <summary>
+    /// EllipsoidParticleEmitterPanel.xaml 的交互逻辑
+    /// </summary>
+    public partial class EllipsoidParticleEmitterPanel : UserControl
+    {
+        private EllipsoidParticleEmitter ellipsoidParticleEmitter;
+
+        public EllipsoidParticleEmitterPanel()
+        {
+            InitializeComponent();
+        }
+
+        public void SetUnityObject(EllipsoidParticleEmitter ellipsoidParticleEmitter)
+        {
+            this.ellipsoidParticleEmitter = ellipsoidParticleEmitter;
+            this.txtEllipsoid.Text = ellipsoidParticleEmitter.Ellipsoid.ToString();
+            this.txtMinEmitterRange.Text = ellipsoidParticleEmitter.MinEmitterRange.ToString();
+
+            this.particleEmitterPanel.SetParticleEmitter(ellipsoidParticleEmitter);
+        }
+    }
+}

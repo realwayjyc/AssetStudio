@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="UnityAnalyzer.Texture2DPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        
+        <Label Grid.Row="0" Grid.Column="0" Content="Texture name:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Text="True" Name="txtTexutreName" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="0" Grid.Column="1" Content="Image size:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="" Name="txtImageSize"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Texture width:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Text="True" Name="txtTextureWidth" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="1" Content="Texture height:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="" Name="txtTextureHeight"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Content="Format:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="0" Text="True" Name="txtTextureFormat" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="1" Content="MipMap:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="" Name="txtMipMap"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="0" Content="Is readable:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="0" Text="True" Name="txtIsReadable" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="1" Content="Read allowed:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="" Name="txtReadAllowed"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+        <Label Grid.Row="4" Grid.Column="0" Content="Image count:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="4" Grid.Column="0" Text="True" Name="txtImageCount" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="4" Grid.Column="1" Content="Texture dimension:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="" Name="txtTexutreDimesion"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="5" Grid.Column="0" Content="Filter mode:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="0" Text="True" Name="txtFilterMode" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="5" Grid.Column="1" Content="Aniso:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Text="" Name="txtAniso"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+        <Label Grid.Row="6" Grid.Column="0" Content="Mip bias:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="0" Text="True" Name="txtMipBias" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="6" Grid.Column="1" Content="Wrap mode:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="1" Text="" Name="txtWrapMode"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+        <Label Grid.Row="7" Grid.Column="0" Content="Usage mode:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="7" Grid.Column="0" Text="True" Name="txtTextureUsageMode" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="7" Grid.Column="1" Content="Color space:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="7" Grid.Column="1" Text="" Name="txtTextureColorSpace"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="8" Grid.Column="0" Content="ImageSize * imageCount:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="8" Grid.Column="0" Text="" Name="txtImageSizexiamgecount"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Button Grid.Row="8" Grid.Column="1" Content="Save Content" Width="100" Height="25" HorizontalAlignment="Left" Click="Button_Click"/>
+
+    </Grid>
+</UserControl>

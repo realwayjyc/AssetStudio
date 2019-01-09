@@ -1,0 +1,86 @@
+﻿<UserControl x:Class="UnityAnalyzer.CameraPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>  
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Enabled:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Text="True" Name="txtEnabled" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="0" Grid.Column="1" Content="Clear Flag:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="" Name="txtClearFlag"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Color(RGBA):" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Text="" Name="txtColor"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="1" Content="N Viewport(XYWH):" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="True" Name="txtNormalizedViewport"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Content="Near clip:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="0" Text="" Name="txtNearClip"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="1" Content="Far clip:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="True" Name="txtFarClip"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="0" Content="Projection:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="0" Text="" Name="txtProjection"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="3" Grid.Column="1" Content="Size:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="True" Name="txtOrthographicSize"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="4" Grid.Column="0" Content="Depth:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="4" Grid.Column="0" Text="" Name="txtDepth"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="4" Grid.Column="1" Content="CullingMask:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <Button Grid.Row="4" Grid.Column="1" Content="Mask Dialog" Name="txtCullingMask"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center" Click="txtCullingMask_Click"/>
+
+        <Label Grid.Row="5" Grid.Column="0" Content="Rendering Path:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="0" Text="" Name="txtRenderingPath"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="5" Grid.Column="1" Content="Target Texture:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Text="True" Name="txtRenderingTexture"  Margin="151,0,0,0.2" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="6" Grid.Column="0" Content="Target display:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="0" Text="" Name="txtTargetDisplay"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="6" Grid.Column="1" Content="HDR:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="6" Grid.Column="1" Text="True" Name="txtHDR"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="7" Grid.Column="0" Content="Occlusion culling:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="7" Grid.Column="0" Text="" Name="txtOcclusionCulling"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="7" Grid.Column="1" Content="Field Of View:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="7" Grid.Column="1" Text="" Name="txtFieldOfView"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+
+        <Label Grid.Row="8" Grid.Column="0" Content="Stereo convergence:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="8" Grid.Column="0" Text="" Name="txtStereoConvergence"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+        <Label Grid.Row="8" Grid.Column="1" Content="Stereo separation:" Width="150" VerticalAlignment="Stretch" ToolTip="Normalized Viewport" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="8" Grid.Column="1" Text="True" Name="txtStereoSeparation"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+
+       
+
+
+
+    </Grid>
+</UserControl>
