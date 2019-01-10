@@ -9,13 +9,9 @@ namespace CodeMod
 {
     class Program
     {
-        static string path = @"C:\Users\jiangy17321\Desktop\sbstudio_reflector";
+        static string path = @"C:\";
         static void Main(string[] args)
         {
-            //ParseFile(@"C:\Users\jiangy17321\Desktop\ADVExit.cs");
-            //ParseFile("D:/unity_project/project6/Assets/script/Manager/Game.cs");
-            //ParseFile("D:/unity_project/project6/Assets/script/NgInterpolate.cs");
-            //ParseFile("D:/unity_project/project6/Assets/script/Utility/Enum!1.cs");
             ParseDir(path);
 
 
