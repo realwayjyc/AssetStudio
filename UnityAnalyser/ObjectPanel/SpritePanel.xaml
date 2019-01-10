@@ -30,7 +30,7 @@
         <TextBox Grid.Row="1" Grid.Column="1" Text="" x:Name="txtExtrude"  Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
 
 
-        <Label Grid.Row="2" Grid.Column="0" Content="Border(XYZW):" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <Label Grid.Row="2" Grid.Column="0" Content="Border(LBRT):" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
         <TextBox Grid.Row="2" Grid.Column="0" Text="True" x:Name="txtBorder" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
 
         <Label Grid.Row="2" Grid.Column="1" Content="Pixels to units:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
