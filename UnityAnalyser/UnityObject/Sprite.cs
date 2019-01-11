@@ -7,6 +7,21 @@ using System.Windows.Controls;
 
 namespace UnityAnalyzer
 {
+    public enum SpritePivotType
+    {
+        CENTER=0,
+        TOP_LEFT,
+        TOP,
+        TOP_RIGHT,
+        LEFT,
+        RIGHT,
+        BOTTOM_LEFT,
+        BOTTOM,
+        BOTTOM_RIGHT,
+        CUSTOM
+    }
+
+
     public class Sprite:UnityObject
     {
         private string spriteName;
@@ -57,6 +72,11 @@ namespace UnityAnalyzer
             get { return spriteRenderData; }
         }
 
+        public SpritePivotType PivotType { get; set; }
+
+        public float PivotX { get; set; }
+
+        public float PivotY { get; set; }
 
         public static Sprite Create(ObjectInfo objectInfo, byte[] content, int objectOffset)
         {
@@ -102,6 +122,50 @@ namespace UnityAnalyzer
             ret.extrude = BitConverter.ToInt32(content, index);
             index += 4;
 
+            //计算Pivot
+            ret.PivotX = (ret.offsetX + ret.rect.Width / 2) / ret.rect.Width;
+            ret.PivotY= (ret.offsetY + ret.rect.Height / 2) / ret.rect.Height;
+            if (Util.FloatEquals(ret.PivotX, 0.5f) && Util.FloatEquals(ret.PivotY, 0.5f))
+            {
+                ret.PivotType = SpritePivotType.CENTER;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 0f) && Util.FloatEquals(ret.PivotY, 1f))
+            {
+                ret.PivotType = SpritePivotType.TOP_LEFT;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 0.5f) && Util.FloatEquals(ret.PivotY, 1f))
+            {
+                ret.PivotType = SpritePivotType.TOP;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 1f) && Util.FloatEquals(ret.PivotY, 1f))
+            {
+                ret.PivotType = SpritePivotType.TOP_RIGHT;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 0f) && Util.FloatEquals(ret.PivotY, 0.5f))
+            {
+                ret.PivotType = SpritePivotType.LEFT;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 1f) && Util.FloatEquals(ret.PivotY, 0.5f))
+            {
+                ret.PivotType = SpritePivotType.RIGHT;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 0f) && Util.FloatEquals(ret.PivotY, 0f))
+            {
+                ret.PivotType = SpritePivotType.BOTTOM_LEFT;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 0.5f) && Util.FloatEquals(ret.PivotY, 0f))
+            {
+                ret.PivotType = SpritePivotType.BOTTOM;
+            }
+            else if (Util.FloatEquals(ret.PivotX, 1f) && Util.FloatEquals(ret.PivotY, 0f))
+            {
+                ret.PivotType = SpritePivotType.BOTTOM_RIGHT;
+            }
+            else
+            {
+                ret.PivotType = SpritePivotType.CUSTOM;
+            }
+
             if (objectInfo.UnityFileVersion[0] == 5 && objectInfo.UnityFileVersion[1] == 3)
             {
                 //未知内容
@@ -129,6 +193,7 @@ namespace UnityAnalyzer
             }
             return objectInfoPanel;
         }
+
 
     }
 }

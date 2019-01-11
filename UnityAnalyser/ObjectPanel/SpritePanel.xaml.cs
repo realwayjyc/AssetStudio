@@ -42,6 +42,9 @@ namespace UnityAnalyzer
             this.txtBorder.Text = sprite.Border.ToString();
             this.txtPixelsToUnits.Text = sprite.PixelsToUnits.ToString();
 
+            this.txtPivot.Text = sprite.PivotType.ToString();
+            this.txtPivotValue.Text = sprite.PivotX.ToString() + " " + sprite.PivotY.ToString();
+
             this.spriteRenderDataPanel.SetSpritRenderData(sprite.SpriteRenderData);
         }
     }
