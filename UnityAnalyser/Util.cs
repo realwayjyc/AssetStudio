@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
@@ -59,7 +59,7 @@ namespace UnityAnalyzer
         }
 
         /// <summary>
-        /// ´Óindex¿ªÊ¼¶ÁÈ¡Ò»ÏµÁĞSerializedObjectIdentifier
+        /// ä»indexå¼€å§‹è¯»å–ä¸€ç³»åˆ—SerializedObjectIdentifier
         /// </summary>
         /// <param name="content"></param>
         /// <param name="index"></param>
@@ -148,8 +148,8 @@ namespace UnityAnalyzer
         }
 
         /// <summary>
-        /// //5.0ÒÔÉÏµÄ°æ±¾identifierÊÇ8Î»µÄ£¬ËùÒÔÒ»¸öSerializedObjectIdentifierÊÇ12Î»£¬
-        /// //´Ë´¦ĞèÒª¶à¼ÓÉÏ4Î»
+        /// //5.0ä»¥ä¸Šçš„ç‰ˆæœ¬identifieræ˜¯8ä½çš„ï¼Œæ‰€ä»¥ä¸€ä¸ªSerializedObjectIdentifieræ˜¯12ä½ï¼Œ
+        /// //æ­¤å¤„éœ€è¦å¤šåŠ ä¸Š4ä½
         /// </summary>
         /// <returns></returns>
         public static int GetSerializedFileIndexIdRange(ObjectInfo objectInfo)
@@ -182,6 +182,12 @@ namespace UnityAnalyzer
             file_stream.Read(content, 0, size);
             file_stream.Close();
             return true;
+        }
+
+        public static bool FloatEquals(float a, float b)
+        {
+            if (Math.Abs(a - b) < 0.0000001) return true;
+            return false;
         }
     }
 }

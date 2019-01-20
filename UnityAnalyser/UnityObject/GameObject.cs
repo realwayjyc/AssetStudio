@@ -132,6 +132,9 @@ namespace UnityAnalyzer
             {
                 ret.name += (char)content[index + i];
             }
+            //仅用来区分同一个Scene下的各个不同的同名GameObject
+            ret.name += "_" + objectInfo.Id;
+
             index += stringLength;
             index+=Util.GetAlignCount(index, objectOffset);
             ret.tag = BitConverter.ToInt16(content, index); index += 2;
