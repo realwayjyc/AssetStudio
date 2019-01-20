@@ -144,6 +144,7 @@ namespace UnityAnalyzer
         {
             int[] version = objectInfo.UnityFileVersion;
             Mesh ret = new Mesh();
+
             return ret;
             int index = objectOffset + objectInfo.ByteStart;
             ret.meshName = Util.readStringAndAlign(content, objectOffset, ref index);
