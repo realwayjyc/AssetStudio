@@ -9,7 +9,7 @@ namespace CodeMod
 {
     class Program
     {
-        static string path = @"C:\";
+        static string path = @"G:\ppp";
         static void Main(string[] args)
         {
             ParseDir(path);
