@@ -164,10 +164,6 @@ namespace AssetStudio
         public Sprite(ObjectReader reader) : base(reader)
         {
             m_Rect = reader.ReadRectangleF();
-            if (this.m_Name.Contains("NewGUI"))
-            {
-                Console.WriteLine("a");
-            }
             m_Offset = reader.ReadVector2();
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
             {
