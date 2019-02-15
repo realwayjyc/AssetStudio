@@ -51,6 +51,19 @@
             return false;
         }
 
+        public T ObjectPointed
+        {
+            get
+            {
+                T t = default(T);
+                if (TryGet(out t))
+                {
+                    return t;
+                }
+                return default(T);
+            }
+        }
+
         public bool TryGet(out T result)
         {
             if (TryGetAssetsFile(out var sourceFile))

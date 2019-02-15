@@ -182,6 +182,23 @@ namespace AssetStudio
             }
         }
 
+        /// <summary>
+        /// 对于骨骼不在GameObject内的情况
+        /// </summary>
+        /// <param name="trans"></param>
+        private void ReConvertTransform(Transform trans)
+        {
+            Transform transformIterator = trans;
+            List<Transform> transformList = new List<Transform>();
+            while (transformIterator.m_GameObject.ObjectPointed.m_Name != RootFrame.Name)
+            {
+                transformList.Insert(0, transformIterator);
+                transformIterator = transformIterator.m_Father.ObjectPointed;
+            }
+
+            ConvertTransforms(transformList[0], RootFrame);
+        }
+
         private ImportedFrame ConvertTransform(Transform trans)
         {
             var frame = new ImportedFrame(trans.m_Children.Length);
@@ -370,6 +387,10 @@ namespace AssetStudio
                         var bone = new ImportedBone();
                         if (sMesh.m_Bones[i].TryGet(out var m_Transform))
                         {
+                            if (!IsExistTransformPath(m_Transform))
+                            {
+                                ReConvertTransform(m_Transform);
+                            }
                             bone.Path = GetTransformPath(m_Transform);
                         }
                         if (!string.IsNullOrEmpty(bone.Path))
@@ -494,6 +515,11 @@ namespace AssetStudio
             }
 
             return null;
+        }
+
+        private bool IsExistTransformPath(Transform transform)
+        {
+            return transformDictionary.ContainsKey(transform);
         }
 
         private string GetTransformPath(Transform transform)
