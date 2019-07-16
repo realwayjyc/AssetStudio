@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -29,6 +28,21 @@ namespace AssetStudio
 
         public int Count => children.Count;
 
+        public string Path
+        {
+            get
+            {
+                var frame = this;
+                var path = frame.Name;
+                while (frame.Parent != null)
+                {
+                    frame = frame.Parent;
+                    path = frame.Name + "/" + path;
+                }
+                return path;
+            }
+        }
+
         public ImportedFrame(int childrenCount = 0)
         {
             children = new List<ImportedFrame>(childrenCount);
@@ -48,19 +62,15 @@ namespace AssetStudio
 
         public ImportedFrame FindFrameByPath(string path)
         {
-            var splitPath = path.Split('/');
-            if (Name != splitPath[0])
-                throw new Exception($"Couldn't find path {path}");
-            var curFrame = this;
-            for (int i = 1; i < splitPath.Length; i++)
+            var name = path.Substring(path.LastIndexOf('/') + 1);
+            foreach (var frame in FindChilds(name))
             {
-                curFrame = curFrame.FindChild(splitPath[i], false);
-                if (curFrame == null)
+                if (frame.Path.EndsWith(path, StringComparison.Ordinal))
                 {
-                    throw new Exception($"Couldn't find path {path}");
+                    return frame;
                 }
             }
-            return curFrame;
+            return null;
         }
 
         public ImportedFrame FindFrame(string name)
@@ -236,18 +246,27 @@ namespace AssetStudio
     public class ImportedMorph
     {
         public string Path { get; set; }
-        public string ClipName { get; set; }
-        public List<Tuple<float, int, int>> Channels { get; set; }
+        public List<ImportedMorphChannel> Channels { get; set; }
+    }
+
+    public class ImportedMorphChannel
+    {
+        public string Name { get; set; }
         public List<ImportedMorphKeyframe> KeyframeList { get; set; }
-        public List<ushort> MorphedVertexIndices { get; set; }
     }
 
     public class ImportedMorphKeyframe
     {
-        public string Name { get; set; }
-        public List<ImportedVertex> VertexList { get; set; }
-        public List<ushort> MorphedVertexIndices { get; set; }
+        public bool hasNormals { get; set; }
+        public bool hasTangents { get; set; }
         public float Weight { get; set; }
+        public List<ImportedMorphVertex> VertexList { get; set; }
+    }
+
+    public class ImportedMorphVertex
+    {
+        public uint Index { get; set; }
+        public ImportedVertex Vertex { get; set; }
     }
 
     public static class ImportedHelpers
@@ -257,27 +276,6 @@ namespace AssetStudio
             foreach (var mesh in importedMeshList)
             {
                 if (mesh.Path == path)
-                {
-                    return mesh;
-                }
-            }
-
-            return null;
-        }
-
-        public static ImportedMesh FindMesh(ImportedFrame frame, List<ImportedMesh> importedMeshList)
-        {
-            var framePath = frame.Name;
-            var root = frame;
-            while (root.Parent != null)
-            {
-                root = root.Parent;
-                framePath = root.Name + "/" + framePath;
-            }
-
-            foreach (var mesh in importedMeshList)
-            {
-                if (mesh.Path == framePath)
                 {
                     return mesh;
                 }
