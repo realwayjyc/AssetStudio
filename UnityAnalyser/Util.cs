@@ -4,24 +4,57 @@ using System.Text;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using UnityEngine;
+using Color = System.Drawing.Color;
 
 namespace UnityAnalyzer
 {
     public class Util
     {
+        private static float episilon = 0.000001f;
         public static int GetAlignCount(int index, int startOffset)
         {
             int diff = index - startOffset;
             return (int)(((diff + 3) & 0xFFFFFFFC) - diff);
         }
 
+        private static float RoundValue(float value)
+        {
+            if (value>-episilon &&  value < episilon)
+            {
+                return 0.0f;
+            }
+
+            int intV = (int) value;
+            if ((value - (float) intV) >= -episilon && (value - (float) intV) <= episilon)
+            {
+                return (float) intV;
+            }
+
+            return value;
+        }
+
         public static void Quaternion2Euler(float x, float y, float z, float w,
             out float xAngle, out float yAngle, out float zAngle)
         {
- 
-            zAngle = (float)(180 * Math.Atan2(2 * (w * z + y * x), 1 - 2 * (x * x + z * z)) / Math.PI);
-            xAngle = (float)(180 * Math.Asin(2 * (w * x - z * y)) / Math.PI);
-            yAngle = (float)(180 * Math.Atan2(2 * (w * y + x * z), 1 - 2 * (x * x + y * y)) / Math.PI);
+            float z1 = 2 * (w * z + y * x);
+            float z2 = 1 - 2 * (x * x + z * z);
+
+            float x1 = 2 * (w * x - z * y);
+
+            float y1 = 2 * (w * y + x * z);
+            float y2 = 1 - 2 * (x * x + y * y);
+
+            z1 = RoundValue(z1);
+            z2 = RoundValue(z2);
+            x1 = RoundValue(x1);
+
+            y1 = RoundValue(y1);
+            y2 = RoundValue(y2);
+
+            zAngle = (float)(180 * Math.Atan2(z1,z2) / Math.PI);
+            xAngle = (float)(180 * Math.Asin(x1) / Math.PI);
+            yAngle = (float)(180 * Math.Atan2(y1, y2) / Math.PI);
 
             if (xAngle < 0)
             {

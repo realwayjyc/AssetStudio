@@ -122,6 +122,7 @@ namespace UnityAnalyzer
         {
             Transform ret = new Transform();
 
+
             int serializedFileIndex = BitConverter.ToInt32(content, objectOffset + objectInfo.ByteStart);
             int identifier = BitConverter.ToInt32(content, objectOffset + objectInfo.ByteStart + 4);
             ret.parentGameObjectIdentifier = new SerializedObjectIdentifier(serializedFileIndex, identifier);

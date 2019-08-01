@@ -9,7 +9,9 @@ namespace CodeMod
 {
     class Program
     {
-        static string path = @"G:\ppp";
+        static string path = @"F:\unityproject\PlayClubScripts\Assembly-CSharp";
+
+        //static string path = @"C:\Users\jyc\Desktop\Test";
         static void Main(string[] args)
         {
             ParseDir(path);

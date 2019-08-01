@@ -166,6 +166,9 @@
     <Compile Include="ObjectPanel\RendererPanel.xaml.cs">
       <DependentUpon>RendererPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ObjectPanel\RenderSettingsPanel.xaml.cs">
+      <DependentUpon>RenderSettingsPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ObjectPanel\SpriteRendererPanel.xaml.cs">
       <DependentUpon>SpriteRendererPanel.xaml</DependentUpon>
     </Compile>
@@ -252,6 +255,7 @@
     <Compile Include="UnityObject\Material.cs" />
     <Compile Include="UnityObject\MonoScript.cs" />
     <Compile Include="UnityObject\RectTransform.cs" />
+    <Compile Include="UnityObject\RenderSettings.cs" />
     <Compile Include="UnityObject\RigidBody.cs" />
     <Compile Include="UnityObject\ScriptRef.cs" />
     <Compile Include="UnityObject\ScriptRefInfo.cs" />
@@ -388,6 +392,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ObjectPanel\RendererPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\RenderSettingsPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -284,109 +284,121 @@ namespace UnityAnalyzer
             }
             else
             {
-                switch (objectInfo.ClassIDType)
+                try
                 {
-                    case ClassIDType.CLASS_GameObject:
-                        ret = GameObject.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Transform:
-                        ret = Transform.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_MonoScript:
-                        ret = MonoScript.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Camera:
-                        ret = Camera.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_TagManager:
-                        ret=TagManager.Create(objectInfo, content, objectOffset);
-                        objectInfo.UnityFile.Analyzer.TagManager = ret as TagManager;
-                        break;
-                    case ClassIDType.CLASS_Canvas:
-                        ret = Canvas.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_RectTransform:
-                        ret = RectTransform.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_CanvasRenderer:
-                        ret = CanvasRenderer.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Texture2D:
-                        {
-                            int index = 0;
-                            ret = Texture2D.Create(objectInfo, content, objectOffset, ref index);
-                        }
-                        break;
-                    case ClassIDType.CLASS_BoxCollider:
-                        {
-                            ret = BoxCollider.Create(objectInfo, content, objectOffset);
+                    switch (objectInfo.ClassIDType)
+                    {
+                        case ClassIDType.CLASS_GameObject:
+                            ret = GameObject.Create(objectInfo, content, objectOffset);
                             break;
-                        }
-                    case ClassIDType.CLASS_Rigidbody:
-                        {
-                            ret = RigidBody.Create(objectInfo, content, objectOffset);
+                        case ClassIDType.CLASS_Transform:
+                            ret = Transform.Create(objectInfo, content, objectOffset);
                             break;
-                        }
-                    case ClassIDType.CLASS_Cubemap:
-                        {
-                            ret = Cubemap.Create(objectInfo, content, objectOffset);
-                        }
-                        break;
-                    case ClassIDType.CLASS_Shader:
-                        ret = Shader.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Material:
-                        ret = Material.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Sprite:
-                        ret = Sprite.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_SpriteRenderer:
-                        ret = SpriteRenderer.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_ParticleAnimator:
-                        ret = ParticleAnimator.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_EllipsoidParticleEmitter:
-                        ret = EllipsoidParticleEmitter.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_ParticleRenderer:
-                        ret = ParticleRenderer.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Mesh:
-                        ret = Mesh.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_PlayerSettings:
-                        ret = PlayerSettings.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_AudioSource:
-                        ret = AudioSource.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_AudioClip:
-                        ret = AudioClip.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Animator:
-                        ret = Animator.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_AnimationClip:
-                        ret = AnimationClip.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_AnimatorController:
-                        ret = AnimatorController.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_MeshRenderer:
-                         ret = MeshRenderer.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_MeshFilter:
-                        ret = MeshFilter.Create(objectInfo, content, objectOffset);
-                        break;
-                    case ClassIDType.CLASS_Light:
-                        ret = Light.Create(objectInfo, content, objectOffset);
-                        break;
-                    default:
-                        ret = new UnityObject();
-                        break;
+                        case ClassIDType.CLASS_MonoScript:
+                            ret = MonoScript.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_Camera:
+                            ret = Camera.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_TagManager:
+                            ret = TagManager.Create(objectInfo, content, objectOffset);
+                            objectInfo.UnityFile.Analyzer.TagManager = ret as TagManager;
+                            break;
+                        case ClassIDType.CLASS_Canvas:
+                            ret = Canvas.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_RectTransform:
+                            ret = RectTransform.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_CanvasRenderer:
+                            ret = CanvasRenderer.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_Texture2D:
+                            {
+                                int index = 0;
+                                ret = Texture2D.Create(objectInfo, content, objectOffset, ref index);
+                            }
+                            break;
+                        case ClassIDType.CLASS_BoxCollider:
+                            {
+                                ret = BoxCollider.Create(objectInfo, content, objectOffset);
+                                break;
+                            }
+                        case ClassIDType.CLASS_Rigidbody:
+                            {
+                                ret = RigidBody.Create(objectInfo, content, objectOffset);
+                                break;
+                            }
+                        case ClassIDType.CLASS_Cubemap:
+                            {
+                                ret = Cubemap.Create(objectInfo, content, objectOffset);
+                            }
+                            break;
+                        case ClassIDType.CLASS_Shader:
+                            ret = Shader.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_Material:
+                            ret = Material.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_Sprite:
+                            ret = Sprite.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_SpriteRenderer:
+                            ret = SpriteRenderer.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_ParticleAnimator:
+                            ret = ParticleAnimator.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_EllipsoidParticleEmitter:
+                            ret = EllipsoidParticleEmitter.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_ParticleRenderer:
+                            ret = ParticleRenderer.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_Mesh:
+                            ret = Mesh.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_PlayerSettings:
+                            ret = PlayerSettings.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_AudioSource:
+                            ret = AudioSource.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_AudioClip:
+                            ret = AudioClip.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_Animator:
+                            ret = Animator.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_AnimationClip:
+                            ret = AnimationClip.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_AnimatorController:
+                            ret = AnimatorController.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_MeshRenderer:
+                            ret = MeshRenderer.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_MeshFilter:
+                            ret = MeshFilter.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_Light:
+                            ret = Light.Create(objectInfo, content, objectOffset);
+                            break;
+                        case ClassIDType.CLASS_RenderSettings:
+                            ret = RenderSettings.Create(objectInfo, content, objectOffset);
+                            break;
+                        default:
+                            ret = new UnityObject();
+                            break;
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+
+                }
+                
             }
             if (ret==null)
             {
