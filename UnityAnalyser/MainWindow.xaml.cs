@@ -275,7 +275,7 @@ namespace UnityAnalyzer
                     TabItem tabItem = new TabItem();
                     this.tbCtrl.Items.Add(tabItem);
                     tabItem.MouseDoubleClick += tabItem_MouseDoubleClick;
-                    tabItem.Header = gameObject.Name;
+                    tabItem.Header = gameObject.Name.Replace("_", "__");
                     tabItem.DataContext = gameObject;
 
                     GameObjectDatagrid gameObjectDataGrid = null;
