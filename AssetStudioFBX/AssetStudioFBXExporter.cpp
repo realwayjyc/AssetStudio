@@ -2,7 +2,8 @@
 
 namespace AssetStudio
 {
-	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
+	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision,
+		bool allNodes, bool skins, bool animation, bool blendShape, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -13,16 +14,22 @@ namespace AssetStudio
 		String^ currentDir = Directory::GetCurrentDirectory();
 		Directory::SetCurrentDirectory(dir->FullName);
 		auto name = Path::GetFileName(path);
-		Exporter^ exporter = gcnew Exporter(name, imported, allFrames, allBones, skins, boneSize, scaleFactor, versionIndex, isAscii);
-		exporter->ExportMorphs();
-		exporter->ExportAnimations(eulerFilter, filterPrecision);
+		Exporter^ exporter = gcnew Exporter(name, imported, allNodes, skins, castToBone, boneSize, scaleFactor, versionIndex, isAscii);
+		if (blendShape)
+		{
+			exporter->ExportMorphs();
+		}
+		if (animation)
+		{
+			exporter->ExportAnimations(eulerFilter, filterPrecision);
+		}
 		exporter->pExporter->Export(exporter->pScene);
 		delete exporter;
 
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	Fbx::Exporter::Exporter(String^ name, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
+	Fbx::Exporter::Exporter(String^ name, IImported^ imported, bool allNodes, bool skins, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
 	{
 		this->imported = imported;
 		exportSkins = skins;
@@ -49,6 +56,15 @@ namespace AssetStudio
 
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
 		globalSettings.SetSystemUnit(FbxSystemUnit(scaleFactor));
+
+		if (imported->AnimationList->Count > 0)
+		{
+			auto ani = imported->AnimationList[0];
+			if (ani->SampleRate == 60.0f)
+			{
+				globalSettings.SetTimeMode(FbxTime::eFrames60);
+			}
+		}
 
 		cDest = StringToUTF8(name);
 		pExporter = FbxExporter::Create(pScene, "");
@@ -77,7 +93,7 @@ namespace AssetStudio
 		}
 
 		framePaths = nullptr;
-		if (!allFrames)
+		if (!allNodes)
 		{
 			framePaths = SearchHierarchy();
 			if (!framePaths)
@@ -87,7 +103,7 @@ namespace AssetStudio
 		}
 
 		pBindPose = FbxPose::Create(pScene, "BindPose");
-		pBindPose->SetIsBindPose(true);
+		pScene->AddPose(pBindPose);
 
 		frameToNode = gcnew Dictionary<ImportedFrame^, size_t>();
 		meshFrames = imported->MeshList != nullptr ? gcnew List<ImportedFrame^>() : nullptr;
@@ -95,7 +111,7 @@ namespace AssetStudio
 
 		if (imported->MeshList != nullptr)
 		{
-			SetJointsFromImportedMeshes(allBones);
+			SetJointsFromImportedMeshes(castToBone);
 
 			pMaterials = new FbxArray<FbxSurfacePhong*>();
 			pTextures = new FbxArray<FbxFileTexture*>();
@@ -158,18 +174,30 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::SetJointsNode(ImportedFrame^ frame, HashSet<String^>^ bonePaths, bool allBones)
+	void Fbx::Exporter::SetJointsNode(ImportedFrame^ frame, HashSet<String^>^ bonePaths, bool castToBone)
 	{
 		size_t pointer;
 		if (frameToNode->TryGetValue(frame, pointer))
 		{
 			auto pNode = (FbxNode*)pointer;
-			if (allBones || bonePaths->Contains(frame->Path))
+			if (castToBone)
 			{
 				FbxSkeleton* pJoint = FbxSkeleton::Create(pScene, "");
 				pJoint->Size.Set(FbxDouble(boneSize));
 				pJoint->SetSkeletonType(FbxSkeleton::eLimbNode);
 				pNode->SetNodeAttribute(pJoint);
+			}
+			else if (bonePaths->Contains(frame->Path))
+			{
+				FbxSkeleton* pJoint = FbxSkeleton::Create(pScene, "");
+				pJoint->Size.Set(FbxDouble(boneSize));
+				pJoint->SetSkeletonType(FbxSkeleton::eLimbNode);
+				pNode->SetNodeAttribute(pJoint);
+
+				pJoint = FbxSkeleton::Create(pScene, "");
+				pJoint->Size.Set(FbxDouble(boneSize));
+				pJoint->SetSkeletonType(FbxSkeleton::eLimbNode);
+				pNode->GetParent()->SetNodeAttribute(pJoint);
 			}
 			else
 			{
@@ -184,7 +212,7 @@ namespace AssetStudio
 		}
 		for (int i = 0; i < frame->Count; i++)
 		{
-			SetJointsNode(frame[i], bonePaths, allBones);
+			SetJointsNode(frame[i], bonePaths, castToBone);
 		}
 	}
 
@@ -235,7 +263,7 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::SetJointsFromImportedMeshes(bool allBones)
+	void Fbx::Exporter::SetJointsFromImportedMeshes(bool castToBone)
 	{
 		if (!exportSkins)
 		{
@@ -256,7 +284,7 @@ namespace AssetStudio
 			}
 		}
 
-		SetJointsNode(imported->RootFrame, bonePaths, allBones);
+		SetJointsNode(imported->RootFrame, bonePaths, castToBone);
 	}
 
 	void Fbx::Exporter::ExportFrame(FbxNode* pParentNode, ImportedFrame^ frame)
@@ -292,9 +320,9 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList)
+	void Fbx::Exporter::ExportMesh(FbxNode* pFrameNode, ImportedMesh^ iMesh)
 	{
-		List<ImportedBone^>^ boneList = meshList->BoneList;
+		List<ImportedBone^>^ boneList = iMesh->BoneList;
 		bool hasBones;
 		if (exportSkins && boneList != nullptr)
 		{
@@ -305,63 +333,72 @@ namespace AssetStudio
 			hasBones = false;
 		}
 
-		FbxArray<FbxNode*>* pBoneNodeList = nullptr;
 		FbxArray<FbxCluster*>* pClusterArray = nullptr;
 
 		try
 		{
 			if (hasBones)
 			{
-				pBoneNodeList = new FbxArray<FbxNode*>();
-				pBoneNodeList->Reserve(boneList->Count);
+				pClusterArray = new FbxArray<FbxCluster*>(boneList->Count);
+
 				for (int i = 0; i < boneList->Count; i++)
 				{
 					auto bone = boneList[i];
-					auto frame = imported->RootFrame->FindFrameByPath(bone->Path);
-					auto frameNode = (FbxNode*)frameToNode[frame];
-					pBoneNodeList->Add(frameNode);
-				}
-
-				pClusterArray = new FbxArray<FbxCluster*>();
-				pClusterArray->Reserve(boneList->Count);
-				for (int i = 0; i < boneList->Count; i++)
-				{
-					FbxNode* pNode = pBoneNodeList->GetAt(i);
-					FbxString lClusterName = pNode->GetNameOnly() + FbxString("Cluster");
-					FbxCluster* pCluster = FbxCluster::Create(pScene, lClusterName.Buffer());
-					pCluster->SetLink(pNode);
-					pCluster->SetLinkMode(FbxCluster::eTotalOne);
-					pClusterArray->Add(pCluster);
+					if (bone->Path != nullptr)
+					{
+						auto frame = imported->RootFrame->FindFrameByPath(bone->Path);
+						auto boneNode = (FbxNode*)frameToNode[frame];
+						FbxString lClusterName = boneNode->GetNameOnly() + FbxString("Cluster");
+						FbxCluster* pCluster = FbxCluster::Create(pScene, lClusterName.Buffer());
+						pCluster->SetLink(boneNode);
+						pCluster->SetLinkMode(FbxCluster::eTotalOne);
+						pClusterArray->Add(pCluster);
+					}
+					else
+					{
+						pClusterArray->Add(NULL);
+					}
 				}
 			}
 
-			FbxMesh* pMesh = FbxMesh::Create(pScene, "");
+			FbxMesh* pMesh = FbxMesh::Create(pScene, pFrameNode->GetName());
 			pFrameNode->SetNodeAttribute(pMesh);
 
 			int vertexCount = 0;
-			for (int i = 0; i < meshList->SubmeshList->Count; i++)
+			for (int i = 0; i < iMesh->SubmeshList->Count; i++)
 			{
-				vertexCount += meshList->SubmeshList[i]->VertexList->Count;
+				vertexCount += iMesh->SubmeshList[i]->VertexList->Count;
 			}
 
 			pMesh->InitControlPoints(vertexCount);
 			FbxVector4* pControlPoints = pMesh->GetControlPoints();
 
-			FbxGeometryElementNormal* lGeometryElementNormal = pMesh->CreateElementNormal();
-			lGeometryElementNormal->SetMappingMode(FbxGeometryElement::eByControlPoint);
-			lGeometryElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
+			FbxGeometryElementNormal* lGeometryElementNormal = NULL;
+			if (iMesh->hasNormal)
+			{
+				lGeometryElementNormal = pMesh->CreateElementNormal();
+				lGeometryElementNormal->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
 
-			FbxGeometryElementUV* lGeometryElementUV = pMesh->CreateElementUV("UV0");
-			lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
-			lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+			FbxGeometryElementUV* lGeometryElementUV = NULL;
+			if (iMesh->hasUV)
+			{
+				lGeometryElementUV = pMesh->CreateElementUV("UV0");
+				lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
 
-			FbxGeometryElementTangent* lGeometryElementTangent = pMesh->CreateElementTangent();
-			lGeometryElementTangent->SetMappingMode(FbxGeometryElement::eByControlPoint);
-			lGeometryElementTangent->SetReferenceMode(FbxGeometryElement::eDirect);
+			FbxGeometryElementTangent* lGeometryElementTangent = NULL;
+			if (iMesh->hasTangent)
+			{
+				lGeometryElementTangent = pMesh->CreateElementTangent();
+				lGeometryElementTangent->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementTangent->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
 
-			FbxGeometryElementVertexColor* lGeometryElementVertexColor = nullptr;
-			bool vertexColours = vertexCount > 0 && dynamic_cast<ImportedVertexWithColour^>(meshList->SubmeshList[0]->VertexList[0]) != nullptr;
-			if (vertexColours)
+			FbxGeometryElementVertexColor* lGeometryElementVertexColor = NULL;
+			if (iMesh->hasColor)
 			{
 				lGeometryElementVertexColor = pMesh->CreateElementVertexColor();
 				lGeometryElementVertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
@@ -373,9 +410,9 @@ namespace AssetStudio
 			lGeometryElementMaterial->SetReferenceMode(FbxGeometryElement::eIndexToDirect);
 
 			int firstVertex = 0;
-			for (int i = 0; i < meshList->SubmeshList->Count; i++)
+			for (int i = 0; i < iMesh->SubmeshList->Count; i++)
 			{
-				ImportedSubmesh^ meshObj = meshList->SubmeshList[i];
+				ImportedSubmesh^ meshObj = iMesh->SubmeshList[i];
 				List<ImportedVertex^>^ vertexList = meshObj->VertexList;
 				List<ImportedFace^>^ faceList = meshObj->FaceList;
 
@@ -413,15 +450,15 @@ namespace AssetStudio
 							Color reflection = mat->Reflection;
 							pMat = FbxSurfacePhong::Create(pScene, pMatName);
 							pMat->Diffuse.Set(FbxDouble3(diffuse.R, diffuse.G, diffuse.B));
-							pMat->DiffuseFactor.Set(FbxDouble(diffuse.A));
+							//pMat->DiffuseFactor.Set(FbxDouble(diffuse.A));
 							pMat->Ambient.Set(FbxDouble3(ambient.R, ambient.G, ambient.B));
-							pMat->AmbientFactor.Set(FbxDouble(ambient.A));
+							//pMat->AmbientFactor.Set(FbxDouble(ambient.A));
 							pMat->Emissive.Set(FbxDouble3(emissive.R, emissive.G, emissive.B));
-							pMat->EmissiveFactor.Set(FbxDouble(emissive.A));
+							//pMat->EmissiveFactor.Set(FbxDouble(emissive.A));
 							pMat->Specular.Set(FbxDouble3(specular.R, specular.G, specular.B));
-							pMat->SpecularFactor.Set(FbxDouble(specular.A));
+							//pMat->SpecularFactor.Set(FbxDouble(specular.A));
 							pMat->Reflection.Set(FbxDouble3(reflection.R, reflection.G, reflection.B));
-							pMat->ReflectionFactor.Set(FbxDouble(reflection.A));
+							//pMat->ReflectionFactor.Set(FbxDouble(reflection.A));
 							pMat->Shininess.Set(FbxDouble(mat->Shininess));
 							pMat->TransparencyFactor.Set(FbxDouble(mat->Transparency));
 							pMat->ShadingModel.Set(lShadingName);
@@ -472,39 +509,48 @@ namespace AssetStudio
 
 				for (int j = 0; j < vertexList->Count; j++)
 				{
-					ImportedVertex^ vertex = vertexList[j];
+					ImportedVertex^ iVertex = vertexList[j];
 
-					Vector3 coords = vertex->Position;
-					pControlPoints[j + firstVertex] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
+					Vector3 vertex = iVertex->Vertex;
+					pControlPoints[j + firstVertex] = FbxVector4(vertex.X, vertex.Y, vertex.Z, 0);
 
-					Vector3 normal = vertex->Normal;
-					lGeometryElementNormal->GetDirectArray().Add(FbxVector4(normal.X, normal.Y, normal.Z, 0));
-
-					array<float>^ uv = vertex->UV;
-					if (uv != nullptr)
+					if (iMesh->hasNormal)
 					{
+						Vector3 normal = iVertex->Normal;
+						lGeometryElementNormal->GetDirectArray().Add(FbxVector4(normal.X, normal.Y, normal.Z, 0));
+					}
+
+					if (iMesh->hasUV)
+					{
+						array<float>^ uv = iVertex->UV;
 						lGeometryElementUV->GetDirectArray().Add(FbxVector2(uv[0], uv[1]));
 					}
 
-					Vector4 tangent = vertex->Tangent;
-					lGeometryElementTangent->GetDirectArray().Add(FbxVector4(tangent.X, tangent.Y, tangent.Z, tangent.W));
-
-					if (vertexColours)
+					if (iMesh->hasTangent)
 					{
-						ImportedVertexWithColour^ vert = (ImportedVertexWithColour^)vertexList[j];
-						lGeometryElementVertexColor->GetDirectArray().Add(FbxColor(vert->Colour.R, vert->Colour.G, vert->Colour.B, vert->Colour.A));
+						Vector4 tangent = iVertex->Tangent;
+						lGeometryElementTangent->GetDirectArray().Add(FbxVector4(tangent.X, tangent.Y, tangent.Z, tangent.W));
 					}
 
-					if (hasBones && vertex->BoneIndices != nullptr)
+					if (iMesh->hasColor)
 					{
-						auto boneIndices = vertex->BoneIndices;
-						auto weights4 = vertex->Weights;
+						auto color = iVertex->Color;
+						lGeometryElementVertexColor->GetDirectArray().Add(FbxColor(color.R, color.G, color.B, color.A));
+					}
+
+					if (hasBones && iVertex->BoneIndices != nullptr)
+					{
+						auto boneIndices = iVertex->BoneIndices;
+						auto weights4 = iVertex->Weights;
 						for (int k = 0; k < 4; k++)
 						{
 							if (boneIndices[k] < boneList->Count && weights4[k] > 0)
 							{
 								FbxCluster* pCluster = pClusterArray->GetAt(boneIndices[k]);
-								pCluster->AddControlPointIndex(j + firstVertex, weights4[k]);
+								if (pCluster)
+								{
+									pCluster->AddControlPointIndex(j + firstVertex, weights4[k]);
+								}
 							}
 						}
 					}
@@ -530,7 +576,7 @@ namespace AssetStudio
 				for (int j = 0; j < boneList->Count; j++)
 				{
 					FbxCluster* pCluster = pClusterArray->GetAt(j);
-					if (pCluster->GetControlPointIndicesCount() > 0)
+					if (pCluster)
 					{
 						auto boneMatrix = boneList[j]->Matrix;
 						FbxAMatrix lBoneMatrix;
@@ -557,10 +603,6 @@ namespace AssetStudio
 		}
 		finally
 		{
-			if (pBoneNodeList != NULL)
-			{
-				delete pBoneNodeList;
-			}
 			if (pClusterArray != NULL)
 			{
 				delete pClusterArray;
@@ -749,6 +791,46 @@ namespace AssetStudio
 					eulerFilter->SetQualityTolerance(filterPrecision);
 					eulerFilter->Apply(lCurve, 3);
 				}
+
+				//BlendShape
+				if (keyframeList->BlendShape != nullptr)
+				{
+					FbxString channelName;
+					WITH_MARSHALLED_STRING
+					(
+						pClipName,
+						keyframeList->BlendShape->ChannelName,
+						channelName = FbxString(pClipName);
+					);
+
+					auto lGeometry = (FbxGeometry*)pNode->GetNodeAttribute();
+					int lBlendShapeDeformerCount = lGeometry->GetDeformerCount(FbxDeformer::eBlendShape);
+					if (lBlendShapeDeformerCount > 0)
+					{
+						FbxBlendShape* lBlendShape = (FbxBlendShape*)lGeometry->GetDeformer(0, FbxDeformer::eBlendShape);
+						int lBlendShapeChannelCount = lBlendShape->GetBlendShapeChannelCount();
+						for (int lChannelIndex = 0; lChannelIndex < lBlendShapeChannelCount; ++lChannelIndex)
+						{
+							FbxBlendShapeChannel* lChannel = lBlendShape->GetBlendShapeChannel(lChannelIndex);
+							FbxString lChannelName = lChannel->GetNameOnly();
+							if (lChannelName == channelName)
+							{
+								FbxAnimCurve* lAnimCurve = lGeometry->GetShapeChannel(0, lChannelIndex, lAnimLayer, true);
+								lAnimCurve->KeyModifyBegin();
+
+								for each (auto keyframe in keyframeList->BlendShape->Keyframes)
+								{
+									lTime.SetSecondDouble(keyframe->time);
+									int lKeyIndex = lAnimCurve->KeyAdd(lTime);
+									lAnimCurve->KeySetValue(lKeyIndex, keyframe->value);
+									lAnimCurve->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationCubic);
+								}
+
+								lAnimCurve->KeyModifyEnd();
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -767,7 +849,7 @@ namespace AssetStudio
 				FbxNode* pNode = (FbxNode*)frameToNode[frame];
 				FbxMesh* pMesh = pNode->GetMesh();
 
-				FbxBlendShape* lBlendShape = FbxBlendShape::Create(pScene, pNode->GetName());
+				FbxBlendShape* lBlendShape = FbxBlendShape::Create(pScene, pMesh->GetNameOnly() + FbxString("BlendShape"));
 				pMesh->AddDeformer(lBlendShape);
 
 				for (int i = 0; i < morph->Channels->Count; i++)
@@ -785,7 +867,7 @@ namespace AssetStudio
 
 					for each(ImportedMorphKeyframe^ keyframe in channel->KeyframeList)
 					{
-						FbxShape* lShape = FbxShape::Create(pScene, "");
+						FbxShape* lShape = FbxShape::Create(pScene, FbxString(keyframe->Weight));
 						lBlendShapeChannel->AddTargetShape(lShape, keyframe->Weight);
 
 						auto vectorCount = pMesh->GetControlPointsCount();
@@ -801,8 +883,8 @@ namespace AssetStudio
 						for (int j = 0; j < keyframe->VertexList->Count; j++)
 						{
 							auto index = keyframe->VertexList[j]->Index;
-							auto coords = keyframe->VertexList[j]->Vertex->Position;
-							lVector4[index] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
+							auto vertex = keyframe->VertexList[j]->Vertex->Vertex;
+							lVector4[index] = FbxVector4(vertex.X, vertex.Y, vertex.Z, 0);
 						}
 					}
 				}

@@ -12,6 +12,13 @@ using Object = AssetStudio.Object;
 
 namespace AssetStudioGUI
 {
+    internal enum ExportType
+    {
+        Convert,
+        Raw,
+        Dump
+    }
+
     internal static class Studio
     {
         public static AssetsManager assetsManager = new AssetsManager();
@@ -355,7 +362,7 @@ namespace AssetStudioGUI
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
-        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport)
+        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport, ExportType exportType)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -379,83 +386,99 @@ namespace AssetStudioGUI
                     Logger.Info($"Exporting {asset.TypeString}: {asset.Text}");
                     try
                     {
-                        switch (asset.Type)
+                        switch (exportType)
                         {
-                            case ClassIDType.Texture2D:
-                                if (ExportTexture2D(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.AudioClip:
-                                if (ExportAudioClip(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Shader:
-                                if (ExportShader(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.TextAsset:
-                                if (ExportTextAsset(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.MonoBehaviour:
-                                if (ExportMonoBehaviour(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Font:
-                                if (ExportFont(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Mesh:
-                                if (ExportMesh(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.VideoClip:
-                                if (ExportVideoClip(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.MovieTexture:
-                                if (ExportMovieTexture(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Sprite:
-                                if (ExportSprite(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Animator:
-                                if (ExportAnimator(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.AnimationClip:
-                                break;
-                            default:
+                            case ExportType.Raw:
                                 if (ExportRawFile(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-
+                            case ExportType.Dump:
+                                if (ExportDumpFile(asset, exportpath))
+                                {
+                                    exportedCount++;
+                                }
+                                break;
+                            case ExportType.Convert:
+                                switch (asset.Type)
+                                {
+                                    case ClassIDType.Texture2D:
+                                        if (ExportTexture2D(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.AudioClip:
+                                        if (ExportAudioClip(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.Shader:
+                                        if (ExportShader(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.TextAsset:
+                                        if (ExportTextAsset(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.MonoBehaviour:
+                                        if (ExportMonoBehaviour(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.Font:
+                                        if (ExportFont(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.Mesh:
+                                        if (ExportMesh(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.VideoClip:
+                                        if (ExportVideoClip(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.MovieTexture:
+                                        if (ExportMovieTexture(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.Sprite:
+                                        if (ExportSprite(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.Animator:
+                                        if (ExportAnimator(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                    case ClassIDType.AnimationClip:
+                                        break;
+                                    default:
+                                        if (ExportRawFile(asset, exportpath))
+                                        {
+                                            exportedCount++;
+                                        }
+                                        break;
+                                }
+                                break;
                         }
                     }
                     catch (Exception ex)
@@ -615,7 +638,32 @@ namespace AssetStudioGUI
             });
         }
 
-        private static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
+        public static void ExportObjectsMergeWithAnimationClip(string exportPath, bool openAfterExport, List<GameObject> gameObjects, List<AssetItem> animationList = null)
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                var name = Path.GetFileName(exportPath);
+                Progress.Reset();
+                Logger.Info($"Exporting {name}");
+                try
+                {
+                    ExportGameObjectMerge(gameObjects, exportPath, animationList);
+                    Progress.Report(1, 1);
+                    Logger.Info($"Finished exporting {name}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Export Model:{name} error\r\n{ex.Message}\r\n{ex.StackTrace}");
+                    Logger.Info("Error in export");
+                }
+                if (openAfterExport)
+                {
+                    Process.Start(Path.GetDirectoryName(exportPath));
+                }
+            });
+        }
+
+        public static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
         {
             foreach (GameObjectTreeNode i in nodes)
             {
