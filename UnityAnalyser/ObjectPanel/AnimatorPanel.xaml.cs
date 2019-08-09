@@ -49,7 +49,14 @@ namespace UnityAnalyzer
             else
             {
                 AnimatorController c = animator.GetAnimatorController();
-                this.txtController.Text = c.Name;
+                if(c!=null)
+                {
+                    this.txtController.Text = c.Name;
+                }
+                else
+                {
+                    this.txtController.Text = "[ERROR]";
+                }
                 this.btnAnimator.DataContext = c;
             }
 

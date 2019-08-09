@@ -130,63 +130,88 @@ namespace UnityAnalyzer
         {
             get
             {
-                if (this.ClassIDType == ClassIDType.CLASS_GameObject)
+                try
                 {
-                    return (this as GameObject).GName;
-                }
-                else if (this.ClassIDType <= ClassIDType.CLASS_Undefined && (this as ScriptRef).IsScriptableObject==true)
-                {
-                    return (this as ScriptRef).ScriptableObjectName;
-                }
-                else if (this is Component)
-                {
-                    GameObject go = (this as Component).GetGameObject();
-                    if (go != null)
+                    if (this.ClassIDType == ClassIDType.CLASS_GameObject)
                     {
-                        return go.GName;
+                        return (this as GameObject).GName;
                     }
-                    else
+                    else if (this.ClassIDType <= ClassIDType.CLASS_Undefined && (this as ScriptRef).IsScriptableObject == true)
                     {
-                        return "";
+                        string objectName = (this as ScriptRef).ScriptableObjectName;
+                        if (string.IsNullOrEmpty(objectName))
+                        {
+                            SerializedObjectIdentifier soi = (this as ScriptRef).ParentGameObjectIdentifier;
+                            if (soi != null)
+                            {
+                                UnityObject unityObject = this.GetUnityObjectBySerializedObjectIdentifier(soi);
+                                if (unityObject != null)
+                                {
+                                    return unityObject.Name;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return objectName;
+                        }
                     }
+                    else if (this is Component)
+                    {
+                        GameObject go = (this as Component).GetGameObject();
+                        if (go != null)
+                        {
+                            return go.GName;
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_Texture2D)
+                    {
+                        return (this as Texture2D).TextureName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_Cubemap)
+                    {
+                        return (this as Cubemap).CubeMapName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_Shader)
+                    {
+                        return (this as Shader).ShaderName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_Material)
+                    {
+                        return (this as Material).MaterialName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_MonoScript)
+                    {
+                        return (this as MonoScript).ScriptName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_Sprite)
+                    {
+                        return (this as Sprite).SpriteName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_AudioClip)
+                    {
+                        return (this as AudioClip).AudioClipName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_AnimationClip)
+                    {
+                        return (this as AnimationClip).AnimationClipName;
+                    }
+                    else if (this.ClassIDType == ClassIDType.CLASS_AnimatorController)
+                    {
+                        return (this as AnimatorController).AnimatorControllerName;
+                    }
+                    return "";
                 }
-                else if (this.ClassIDType == ClassIDType.CLASS_Texture2D)
+                catch(Exception ex)
                 {
-                    return (this as Texture2D).TextureName;
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                    return "[ERROR]";
                 }
-                else if (this.ClassIDType == ClassIDType.CLASS_Cubemap)
-                {
-                    return (this as Cubemap).CubeMapName;
-                }
-                else if (this.ClassIDType == ClassIDType.CLASS_Shader)
-                {
-                    return (this as Shader).ShaderName;
-                }
-                else if (this.ClassIDType == ClassIDType.CLASS_Material)
-                {
-                    return (this as Material).MaterialName;
-                }
-                else if (this.ClassIDType == ClassIDType.CLASS_MonoScript)
-                {
-                    return (this as MonoScript).ScriptName;
-                }
-                else if (this.ClassIDType == ClassIDType.CLASS_Sprite)
-                {
-                    return (this as Sprite).SpriteName;
-                }
-                else if (this.ClassIDType == ClassIDType.CLASS_AudioClip)
-                {
-                    return (this as AudioClip).AudioClipName;
-                }
-                else if (this.ClassIDType == ClassIDType.CLASS_AnimationClip)
-                {
-                    return (this as AnimationClip).AnimationClipName;
-                }
-                else if (this.ClassIDType == ClassIDType.CLASS_AnimatorController)
-                {
-                    return (this as AnimatorController).AnimatorControllerName;
-                }
-                return "";
             }
         }
 
