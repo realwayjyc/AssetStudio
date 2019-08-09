@@ -292,7 +292,7 @@ namespace AssetStudio
         public AnimationCurve<float> curve;
         public string attribute;
         public string path;
-        public ClassIDType classID;
+        public int classID;
         public PPtr<MonoScript> script;
 
 
@@ -301,7 +301,7 @@ namespace AssetStudio
             curve = new AnimationCurve<float>(reader, reader.ReadSingle);
             attribute = reader.ReadAlignedString();
             path = reader.ReadAlignedString();
-            classID = (ClassIDType)reader.ReadInt32();
+            classID = reader.ReadInt32();
             script = new PPtr<MonoScript>(reader);
         }
     }

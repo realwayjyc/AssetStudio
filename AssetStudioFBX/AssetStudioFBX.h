@@ -48,8 +48,7 @@ namespace AssetStudio {
 		ref class Exporter
 		{
 		public:
-			static void Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision,
-				bool allNodes, bool skins, bool animation, bool blendShape, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
+			static void Export(String^ name, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
 
 		private:
 			bool exportSkins;
@@ -67,7 +66,7 @@ namespace AssetStudio {
 			FbxArray<FbxFileTexture*>* pTextures;
 			FbxPose* pBindPose;
 
-			Exporter(String^ name, IImported^ imported, bool allNodes, bool skins, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
+			Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
 			~Exporter();
 
 			void Exporter::LinkTexture(ImportedMaterialTexture^ texture, FbxFileTexture* pTexture, FbxProperty& prop);
@@ -76,7 +75,7 @@ namespace AssetStudio {
 			void SearchHierarchy(ImportedFrame^ frame, HashSet<String^>^ exportFrames);
 			void SetJointsFromImportedMeshes(bool allBones);
 			void ExportFrame(FbxNode* pParentNode, ImportedFrame^ frame);
-			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ iMesh);
+			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList);
 			FbxFileTexture* ExportTexture(ImportedTexture^ matTex);
 			void ExportAnimations(bool eulerFilter, float filterValue);
 			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision);

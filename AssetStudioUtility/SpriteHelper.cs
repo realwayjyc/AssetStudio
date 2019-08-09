@@ -37,12 +37,11 @@ namespace AssetStudio
                 using (originalImage)
                 {
                     //var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
-                    var textureRectI = Rectangle.Round(textureRect);
-                    var spriteImage = new Bitmap(textureRectI.Width, textureRectI.Height, PixelFormat.Format32bppArgb);
-                    var destRect = new Rectangle(0, 0, textureRectI.Width, textureRectI.Height);
+                    var spriteImage = new Bitmap((int)textureRect.Width, (int)textureRect.Height, PixelFormat.Format32bppArgb);
+                    var destRect = new Rectangle(0, 0, (int)textureRect.Width, (int)textureRect.Height);
                     using (var graphic = Graphics.FromImage(spriteImage))
                     {
-                        graphic.DrawImage(originalImage, destRect, textureRectI, GraphicsUnit.Pixel);
+                        graphic.DrawImage(originalImage, destRect, textureRect, GraphicsUnit.Pixel);
                     }
                     if (settingsRaw.packed == 1)
                     {
@@ -78,10 +77,7 @@ namespace AssetStudio
                                     }
                                     using (var matr = new Matrix())
                                     {
-                                        var version = m_Sprite.version;
-                                        if (version[0] < 5
-                                           || (version[0] == 5 && version[1] < 4)
-                                           || (version[0] == 5 && version[1] == 4 && version[2] <= 1)) //5.4.1p3 down
+                                        if (m_Sprite.m_Pivot == Vector2.Zero) //5.4.2 down
                                         {
                                             matr.Translate(m_Sprite.m_Rect.Width * 0.5f - textureRectOffset.X, m_Sprite.m_Rect.Height * 0.5f - textureRectOffset.Y);
                                         }
@@ -91,7 +87,7 @@ namespace AssetStudio
                                         }
                                         matr.Scale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits);
                                         path.Transform(matr);
-                                        var bitmap = new Bitmap(textureRectI.Width, textureRectI.Height);
+                                        var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
                                         using (var graphic = Graphics.FromImage(bitmap))
                                         {
                                             using (var brush = new TextureBrush(spriteImage))
