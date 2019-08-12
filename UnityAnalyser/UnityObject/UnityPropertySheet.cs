@@ -256,6 +256,11 @@ namespace UnityAnalyzer
                 unityColorProperty.AValue = BitConverter.ToSingle(content, index);
                 index += 4;
 
+                unityColorProperty.RValue *= 255;
+                unityColorProperty.GValue *= 255;
+                unityColorProperty.BValue *= 255;
+                unityColorProperty.AValue *= 255;
+
                 this.namedColorPropertyDict.Add(name, unityColorProperty);
             }
 
