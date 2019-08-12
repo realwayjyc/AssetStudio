@@ -181,6 +181,7 @@
     <Compile Include="ScriptFields\EventSystemSFVS.cs" />
     <Compile Include="ScriptFields\EventTriggerSFVS.cs" />
     <Compile Include="ScriptFields\GraphicRayCasterSFVS.cs" />
+    <Compile Include="ScriptFields\HorizontalLayoutGroupSFVS.cs" />
     <Compile Include="ScriptFields\ImageSFVS.cs" />
     <Compile Include="ScriptFields\InputFieldSFVS.cs" />
     <Compile Include="ScriptFields\LayoutElementSFVS.cs" />

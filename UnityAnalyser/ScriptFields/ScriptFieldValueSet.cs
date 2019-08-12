@@ -171,6 +171,9 @@ namespace UnityAnalyzer
                     case "VerticalLayoutGroup":
                         scriptFieldValueSet = new VerticalLayoutGroupSFVS(scriptInfoContent, scriptRef);
                         break;
+                    case "HorizontalLayoutGroup":
+                        scriptFieldValueSet = new HorizontalLayoutGroupSFVS(scriptInfoContent, scriptRef);
+                        break;
                     case "ContentSizeFitter":
                         scriptFieldValueSet = new ContentSizeFitterSFVS(scriptInfoContent, scriptRef);
                         break;
@@ -398,7 +401,7 @@ namespace UnityAnalyzer
             }
             #region "非数组"
             //处理非数组的情况
-            if(fieldType.BaseType.FullName == "System.Enum")
+            if (fieldType.BaseType.FullName == "System.Enum")
             {
                 ScriptFieldValue s = new ScriptFieldValue();
                 s.FieldName = fieldVarName;
@@ -459,7 +462,7 @@ namespace UnityAnalyzer
                 ScriptFieldValue s = new ScriptFieldValue();
                 s.FieldName = fieldVarName;
                 SerializedObjectIdentifier soi = Util.ReadNextSerializedObjectIdentifier(
-                    scriptInfoContent, ref index,ScriptRef);
+                    scriptInfoContent, ref index, ScriptRef);
                 UnityObject unityObject = ScriptRef.CurrentParsingScriptRef.GetUnityObjectBySerializedObjectIdentifier(soi);
                 if (unityObject != null)
                 {
@@ -479,21 +482,21 @@ namespace UnityAnalyzer
 
                 int arrayCount = ReadInt4(scriptInfoContent, ref index);
                 ValueChangeFun v;
-                for(int i=0;i<arrayCount;i++)
+                for (int i = 0; i < arrayCount; i++)
                 {
                     float x = ReadSingle4(scriptInfoContent, ref index);
                     float y = ReadSingle4(scriptInfoContent, ref index);
                     float unknown1 = ReadSingle4(scriptInfoContent, ref index);
                     float unknown2 = ReadSingle4(scriptInfoContent, ref index);
 
-                   v = new ValueChangeFun("Point["+(i).ToString()+"].x", x.ToString());
+                    v = new ValueChangeFun("Point[" + (i).ToString() + "].x", x.ToString());
                     multiValue.AddValue(v);
 
                     v = new ValueChangeFun("Point[" + (i).ToString() + "].y", y.ToString());
                     multiValue.AddValue(v);
                 }
 
-                AnimationCurveMode startMode =(AnimationCurveMode)ReadInt4(scriptInfoContent, ref index);
+                AnimationCurveMode startMode = (AnimationCurveMode)ReadInt4(scriptInfoContent, ref index);
                 AnimationCurveMode endMode = (AnimationCurveMode)ReadInt4(scriptInfoContent, ref index);
 
                 v = new ValueChangeFun("Start Point Mode: ", startMode.ToString());
@@ -538,7 +541,7 @@ namespace UnityAnalyzer
             else if (fieldType.FullName == "UnityEngine.Bounds")
             {
                 ScriptFieldValue s = new ScriptFieldValue();
-                s.FieldName = fieldVarName+".Center";
+                s.FieldName = fieldVarName + ".Center";
                 s.FieldValue = (ReadVector3(scriptInfoContent, ref index)).ToString();
                 ret.Add(s);
 
@@ -576,8 +579,17 @@ namespace UnityAnalyzer
 
                 scriptFieldValueList.Add(scriptFieldValue);
             }
+            else if (IsUnityEvent(fieldType))
+            {
+                //处理从UnityEvent<T>派生出来的类型
+                int eventCount = ReadInt4(scriptInfoContent, ref index);
+                for(int i=0;i< eventCount;i++)
+                {
+                    this.GetEventInfo(fieldType.Name, scriptInfoContent, ref index, i);
+                }
+            }
             else if (fieldType.FullName.StartsWith("System.")
-                ||fieldType.FullName.StartsWith("Unity.")
+                || fieldType.FullName.StartsWith("Unity.")
                 || fieldType.FullName.StartsWith("UnityEngine."))
             {
                 //System.Windows.Forms.MessageBox.Show("未知类型:" + fieldType.FullName);
@@ -623,9 +635,9 @@ namespace UnityAnalyzer
                     }
 
                     FieldInfo[] myFields = fieldInfoList.ToArray();
-                    foreach(FieldInfo f in myFields)
+                    foreach (FieldInfo f in myFields)
                     {
-                        List<ScriptFieldValue> sss = ParseTypeAndName(f.FieldType, fieldVarName + "." + f.Name, scriptInfoContent, ref  index);
+                        List<ScriptFieldValue> sss = ParseTypeAndName(f.FieldType, fieldVarName + "." + f.Name, scriptInfoContent, ref index);
                         ret.AddRange(sss);
                     }
                 }
@@ -659,6 +671,19 @@ namespace UnityAnalyzer
                 return true;
             }
             return t.Attributes.ToString().Contains("Serializable");
+        }
+
+        protected bool IsUnityEvent(Type t)
+        {
+            while (t != null)
+            {
+                if (t.Name.Contains("UnityEvent"))
+                {
+                    return true;
+                }
+                t = t.BaseType;
+            }
+            return false;
         }
 
         /// <summary>
