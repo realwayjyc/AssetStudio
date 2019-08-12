@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Controls;
 
 namespace UnityAnalyzer
 {
-
-
     public class MeshRenderer : Renderer
     {
         public static MeshRenderer Create(ObjectInfo objectInfo, byte[] content, int objectOffset)

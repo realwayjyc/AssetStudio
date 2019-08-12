@@ -169,6 +169,9 @@
     <Compile Include="ObjectPanel\RenderSettingsPanel.xaml.cs">
       <DependentUpon>RenderSettingsPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ObjectPanel\SkinnedMeshRendererPanel.xaml.cs">
+      <DependentUpon>SkinnedMeshRendererPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ObjectPanel\SpriteRendererPanel.xaml.cs">
       <DependentUpon>SpriteRendererPanel.xaml</DependentUpon>
     </Compile>
@@ -262,6 +265,7 @@
     <Compile Include="UnityObject\ScriptRefInfo.cs" />
     <Compile Include="UnityObject\SerializedObjectIdentifier.cs" />
     <Compile Include="UnityObject\Shader.cs" />
+    <Compile Include="UnityObject\SkinnedMeshRenderer.cs" />
     <Compile Include="UnityObject\Sprite.cs" />
     <Compile Include="UnityObject\SpriteRenderData.cs" />
     <Compile Include="UnityObject\SpriteRenderer.cs" />
@@ -405,6 +409,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ObjectPanel\ShaderPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\SkinnedMeshRendererPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

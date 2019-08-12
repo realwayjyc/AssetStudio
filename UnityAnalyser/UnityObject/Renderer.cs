@@ -179,7 +179,7 @@ namespace UnityAnalyzer
             lightProbe = (content[index++]==1);
             index+=Util.GetAlignCount(index, objectOffset);
 
-            if (objectInfo.UnityFileVersion[0] == 5 && objectInfo.UnityFileVersion[1] == 3)
+            if (objectInfo.UnityFileVersion[0] >= 5)
             {
                 this.reflectionProbes = (ReflectionProbes)BitConverter.ToUInt32(content, index);
                 index += 4;

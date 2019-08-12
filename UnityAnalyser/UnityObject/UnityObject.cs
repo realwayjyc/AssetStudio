@@ -404,6 +404,9 @@ namespace UnityAnalyzer
                         case ClassIDType.CLASS_MeshRenderer:
                             ret = MeshRenderer.Create(objectInfo, content, objectOffset);
                             break;
+                        case ClassIDType.CLASS_SkinnedMeshRenderer:
+                            ret = SkinnedMeshRenderer.Create(objectInfo, content, objectOffset);
+                            break;
                         case ClassIDType.CLASS_MeshFilter:
                             ret = MeshFilter.Create(objectInfo, content, objectOffset);
                             break;
