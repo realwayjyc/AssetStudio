@@ -432,7 +432,7 @@ namespace UnityAnalyzer
         private string resS_Path;
 
         [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type, int bmpsize, bool fixAlpha);
+        public static extern bool Ponvert(byte[] data, int dataSize, int width, int height, int type, bool fixAlpha, IntPtr image);
 
         public static Texture2D Create(ObjectInfo objectInfo, byte[] content, int objectOffset,ref int outIndex)
         {
@@ -695,18 +695,17 @@ namespace UnityAnalyzer
         }
         private Bitmap TextureConverter()
         {
-            var bitmap = new Bitmap(this.TextureWidth, this.textureHeight);
-            var rect = new Rectangle(0, 0, TextureWidth, textureHeight);
-            var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            var len = Math.Abs(bmd.Stride) * bmd.Height;
+            var imageBuff = new byte[TextureWidth * textureHeight * 4];
+            var gch = GCHandle.Alloc(imageBuff, GCHandleType.Pinned);
+            var imagePtr = gch.AddrOfPinnedObject();
             var fixAlpha = glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG;
-            if (!Ponvert(imageContent, bmd.Scan0, TextureWidth, textureHeight, imageContent.Length, (int)q_format, len, fixAlpha))
+            if (!Ponvert(imageContent, this.ImageSize, TextureWidth, textureHeight, (int)q_format, fixAlpha, imagePtr))
             {
-                bitmap.UnlockBits(bmd);
-                bitmap.Dispose();
+                gch.Free();
                 return null;
             }
-            bitmap.UnlockBits(bmd);
+            var bitmap = new Bitmap(TextureWidth, textureHeight, TextureWidth * 4, PixelFormat.Format32bppArgb, imagePtr);
+            gch.Free();
             return bitmap;
         }
 
