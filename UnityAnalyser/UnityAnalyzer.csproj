@@ -178,6 +178,7 @@
     <Compile Include="ObjectPanel\UVAnimationPanel.xaml.cs">
       <DependentUpon>UVAnimationPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Quaternion.cs" />
     <Compile Include="ScriptFields\ButtonSFVS.cs" />
     <Compile Include="ScriptFields\CanvasScalerSFVS.cs" />
     <Compile Include="ScriptFields\ContentSizeFitterSFVS.cs" />

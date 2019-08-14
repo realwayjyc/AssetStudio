@@ -11,36 +11,954 @@ using System.Drawing.Imaging;
 namespace UnityAnalyzer
 {
 
-    public class AnimatorControllerLayer
+    //public class AnimatorControllerLayer
+    //{
+    //    public string name;
+    //    public uint layerNameMapKey;
+    //}
+
+    //public class AnimatorControllerState
+    //{
+    //    public string name;
+    //    public uint stateNameMapKey;
+    //    public AnimatorControllerLayer layer;
+    //    public AnimationClip animationClip;
+
+    //    public uint motionMapKey;
+    //    public string motionName;
+    //}
+
+    //public enum AnimatorControllerParamType
+    //{
+    //    Float=1,
+    //    Int=3,
+    //    Bool=4,
+    //    Trigger=9
+    //}
+
+    //public class AnimatorControllerParam
+    //{
+    //    public string paramName;
+    //    public uint paramNameKey;
+    //    public AnimatorControllerParamType paramType;
+    //}
+
+    public class HumanPoseMask
     {
-        public string name;
-        public uint layerNameMapKey;
+        public uint word0;
+        public uint word1;
+        public uint word2;
+
+        public HumanPoseMask(ObjectInfo objectInfo, byte[] content, int objectOffset,ref int index)
+        {
+            //var version = reader.version;
+            word0 = BitConverter.ToUInt32(content, index);
+            index += 4;
+            word1 = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            //if (version[0] > 5 || (version[0] == 5 && version[1] >= 2)) //5.2 and up
+            //{
+            //    word2 = reader.ReadUInt32();
+            //}
+        }
     }
 
-    public class AnimatorControllerState
+    public class SkeletonMaskElement
     {
-        public string name;
-        public uint stateNameMapKey;
-        public AnimatorControllerLayer layer;
-        public AnimationClip animationClip;
+        public uint m_PathHash;
+        public float m_Weight;
 
-        public uint motionMapKey;
-        public string motionName;
+        public SkeletonMaskElement(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            m_PathHash = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_Weight = BitConverter.ToSingle(content, index);
+            index += 4;
+        }
     }
 
-    public enum AnimatorControllerParamType
+    public class SkeletonMask
     {
-        Float=1,
-        Int=3,
-        Bool=4,
-        Trigger=9
+        public SkeletonMaskElement[] m_Data;
+        public SkeletonMask(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int numElements = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_Data = new SkeletonMaskElement[numElements];
+            for (int i = 0; i < numElements; i++)
+            {
+                m_Data[i] = new SkeletonMaskElement(objectInfo,content, objectOffset,ref index);
+            }
+        }
     }
 
-    public class AnimatorControllerParam
+    public class LayerConstant
     {
-        public string paramName;
-        public uint paramNameKey;
-        public AnimatorControllerParamType paramType;
+        public uint m_StateMachineIndex;
+        public uint m_StateMachineMotionSetIndex;
+        public HumanPoseMask m_BodyMask;
+        public SkeletonMask m_SkeletonMask;
+        public uint m_Binding;
+        public int m_LayerBlendingMode;
+        public float m_DefaultWeight;
+        public bool m_IKPass;
+        public bool m_SyncedLayerAffectsTiming;
+
+        public LayerConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+
+            m_StateMachineIndex = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_StateMachineMotionSetIndex = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_BodyMask = new HumanPoseMask(objectInfo, content, objectOffset, ref index);
+
+            m_SkeletonMask = new SkeletonMask(objectInfo, content, objectOffset, ref index);
+
+            m_Binding = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_LayerBlendingMode = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 2)) //4.2 and up
+            {
+                m_DefaultWeight = BitConverter.ToSingle(content, index);
+                index += 4;
+            }
+            m_IKPass = content[index++] == 1;
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 2)) //4.2 and up
+            {
+                m_SyncedLayerAffectsTiming = content[index++] == 1;
+            }
+            index += Util.GetAlignCount(index, objectOffset);
+        }
+    }
+
+    public class ConditionConstant
+    {
+        public uint m_ConditionMode;
+        public uint m_EventID;
+        public float m_EventThreshold;
+        public float m_ExitTime;
+
+        public ConditionConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            m_ConditionMode = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_EventID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_EventThreshold = BitConverter.ToSingle(content, index);
+            index += 4;
+
+            m_ExitTime = BitConverter.ToSingle(content, index);
+            index += 4;
+        }
+    }
+
+    public class TransitionConstant
+    {
+        public ConditionConstant[] m_ConditionConstantArray;
+        public uint m_DestinationState;
+        public uint m_FullPathID;
+        public uint m_ID;
+        public uint m_UserID;
+        public float m_TransitionDuration;
+        public float m_TransitionOffset;
+        public float m_ExitTime;
+        public bool m_HasExitTime;
+        public bool m_HasFixedDuration;
+        public int m_InterruptionSource;
+        public bool m_OrderedInterruption;
+        public bool m_Atomic;
+        public bool m_CanTransitionToSelf;
+
+        public TransitionConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+
+            int numConditions = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_ConditionConstantArray = new ConditionConstant[numConditions];
+            for (int i = 0; i < numConditions; i++)
+            {
+                m_ConditionConstantArray[i] = new ConditionConstant(objectInfo,content,objectOffset,ref index);
+            }
+
+            m_DestinationState = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            if (version[0] >= 5) //5.0 and up
+            {
+                m_FullPathID = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+            m_ID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_UserID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_TransitionDuration = BitConverter.ToSingle(content, index);
+            index += 4;
+
+            m_TransitionOffset = BitConverter.ToSingle(content, index);
+            index += 4;
+
+            if (version[0] >= 5) //5.0 and up
+            {
+                m_ExitTime = BitConverter.ToSingle(content, index);
+                index += 4;
+
+                m_HasExitTime = content[index++] == 1;
+                m_HasFixedDuration = content[index++] == 1;
+                index += Util.GetAlignCount(index, objectOffset);
+
+                m_InterruptionSource = BitConverter.ToInt32(content, index);
+                m_OrderedInterruption = content[index++] == 1;
+            }
+            else
+            {
+                m_Atomic = content[index++] == 1;
+            }
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
+            {
+                m_CanTransitionToSelf = content[index++] == 1;
+            }
+
+            index += Util.GetAlignCount(index, objectOffset);
+        }
+    }
+
+    public class LeafInfoConstant
+    {
+        public uint[] m_IDArray;
+        public uint m_IndexOffset;
+
+        public LeafInfoConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int count= BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_IDArray = new uint[count];
+            for (int i = 0; i < count; i++)
+            {
+                m_IDArray[i] = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+            m_IndexOffset = BitConverter.ToUInt32(content, index);
+            index += 4;
+        }
+    }
+
+    public class Blend1dDataConstant // wrong labeled
+    {
+        public float[] m_ChildThresholdArray;
+
+        public Blend1dDataConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int count = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_ChildThresholdArray = new float[count];
+            for(int i=0;i<count;i++)
+            {
+                m_ChildThresholdArray[i]= BitConverter.ToSingle(content, index);
+                index += 4;
+            }
+        }
+    }
+
+    public class MotionNeighborList
+    {
+        public uint[] m_NeighborArray;
+
+        public MotionNeighborList(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int count = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_NeighborArray = new uint[count];
+           
+            for(int i=0;i<index;i++)
+            {
+                m_NeighborArray[i]= BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+        }
+    }
+
+    public class Blend2dDataConstant
+    {
+        public Vector2f[] m_ChildPositionArray;
+        public float[] m_ChildMagnitudeArray;
+        public Vector2f[] m_ChildPairVectorArray;
+        public float[] m_ChildPairAvgMagInvArray;
+        public MotionNeighborList[] m_ChildNeighborListArray;
+
+        public Blend2dDataConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int count = BitConverter.ToInt32(content, index);
+            index += 4;
+            m_ChildPositionArray = new Vector2f[count];
+
+            for (int i=0;i<count;i++)
+            {
+                m_ChildPositionArray[i] = new Vector2f();
+                m_ChildPositionArray[i].x= BitConverter.ToSingle(content, index);
+                index += 4;
+
+                m_ChildPositionArray[i].y = BitConverter.ToSingle(content, index);
+                index += 4;
+            }
+
+            count = BitConverter.ToInt32(content, index);
+            index += 4;
+            m_ChildMagnitudeArray = new float[count];
+            for(int i=0;i< count;i++)
+            {
+                m_ChildMagnitudeArray[i]= BitConverter.ToSingle(content, index);
+                index += 4;
+            }
+
+            count = BitConverter.ToInt32(content, index);
+            index += 4;
+            m_ChildPairVectorArray = new Vector2f[count];
+            for (int i = 0; i < count; i++)
+            {
+                m_ChildPairVectorArray[i] = new Vector2f();
+                m_ChildPairVectorArray[i].x = BitConverter.ToSingle(content, index);
+                index += 4;
+
+                m_ChildPairVectorArray[i].y = BitConverter.ToSingle(content, index);
+                index += 4;
+            }
+
+
+            count = BitConverter.ToInt32(content, index);
+            index += 4;
+            m_ChildPairAvgMagInvArray = new float[count];
+            for (int i = 0; i < count; i++)
+            {
+                m_ChildPairAvgMagInvArray[i] = BitConverter.ToSingle(content, index);
+                index += 4;
+            }
+
+
+            int numNeighbours = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_ChildNeighborListArray = new MotionNeighborList[numNeighbours];
+            for (int i = 0; i < numNeighbours; i++)
+            {
+                m_ChildNeighborListArray[i] = new MotionNeighborList(objectInfo, content, objectOffset, ref index);
+            }
+        }
+    }
+
+    public class BlendDirectDataConstant
+    {
+        public uint[] m_ChildBlendEventIDArray;
+        public bool m_NormalizedBlendValues;
+
+        public BlendDirectDataConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int count = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_ChildBlendEventIDArray = new uint[count];
+            for(int i=0;i<count;i++)
+            {
+                m_ChildBlendEventIDArray[i]= BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+
+            m_NormalizedBlendValues = content[index++] == 1;
+            index += Util.GetAlignCount(index, objectOffset);
+        }
+    }
+
+    public class BlendTreeNodeConstant
+    {
+        public uint m_BlendType;
+        public uint m_BlendEventID;
+        public uint m_BlendEventYID;
+        public uint[] m_ChildIndices;
+        public float[] m_ChildThresholdArray;
+        public Blend1dDataConstant m_Blend1dData;
+        public Blend2dDataConstant m_Blend2dData;
+        public BlendDirectDataConstant m_BlendDirectData;
+        public uint m_ClipID;
+        public uint m_ClipIndex;
+        public float m_Duration;
+        public float m_CycleOffset;
+        public bool m_Mirror;
+
+        public BlendTreeNodeConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 1)) //4.1 and up
+            {
+                m_BlendType = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+            m_BlendEventID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 1)) //4.1 and up
+            {
+                m_BlendEventYID = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+            int count= BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_ChildIndices = new uint[count];
+            for(int i=0;i<count;i++)
+            {
+                m_ChildIndices[i]= BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+
+            if (version[0] < 4 || (version[0] == 4 && version[1] < 1)) //4.1 down
+            {
+                count = BitConverter.ToInt32(content, index);
+                index += 4;
+
+                m_ChildThresholdArray = new float[count];
+                for (int i = 0; i < count; i++)
+                {
+                    m_ChildThresholdArray[i] = BitConverter.ToSingle(content, index);
+                    index += 4;
+                }
+            }
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 1)) //4.1 and up
+            {
+                m_Blend1dData = new Blend1dDataConstant(objectInfo,content,objectOffset,ref index);
+                m_Blend2dData = new Blend2dDataConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            if (version[0] >= 5) //5.0 and up
+            {
+                m_BlendDirectData = new BlendDirectDataConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            m_ClipID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            if (version[0] == 4 && version[1] >= 5) //4.5 - 5.0
+            {
+                m_ClipIndex = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+            m_Duration = BitConverter.ToSingle(content, index);
+            index += 4;
+
+            if (version[0] > 4
+                || (version[0] == 4 && version[1] > 1)
+                || (version[0] == 4 && version[1] == 1 && version[2] >= 3)) //4.1.3 and up
+            {
+                m_CycleOffset = BitConverter.ToSingle(content, index);
+                index += 4;
+                m_Mirror = content[index++] == 1;
+                index += Util.GetAlignCount(index, objectOffset);
+            }
+        }
+    }
+
+    public class ValueConstant
+    {
+        public uint m_ID;
+        public uint m_TypeID;
+        public uint m_Type;
+        public uint m_Index;
+
+        public ValueConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+            m_ID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            if (version[0] < 5 || (version[0] == 5 && version[1] < 5))//5.5 down
+            {
+                m_TypeID = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+            m_Type = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_Index = BitConverter.ToUInt32(content, index);
+            index += 4;
+        }
+    }
+
+    public class ValueArrayConstant
+    {
+        public ValueConstant[] m_ValueArray;
+
+        public ValueArrayConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int numVals = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_ValueArray = new ValueConstant[numVals];
+            for (int i = 0; i < numVals; i++)
+            {
+                m_ValueArray[i] = new ValueConstant(objectInfo, content, objectOffset, ref index);
+            }
+        }
+    }
+
+    public class BlendTreeConstant
+    {
+        public BlendTreeNodeConstant[] m_NodeArray;
+        public ValueArrayConstant m_BlendEventArrayConstant;
+
+        public BlendTreeConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+
+            int numNodes = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_NodeArray = new BlendTreeNodeConstant[numNodes];
+            for (int i = 0; i < numNodes; i++)
+            {
+                m_NodeArray[i] = new BlendTreeNodeConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            if (version[0] < 4 || (version[0] == 4 && version[1] < 5)) //4.5 down
+            {
+                m_BlendEventArrayConstant = new ValueArrayConstant(objectInfo, content, objectOffset, ref index);
+            }
+        }
+    }
+
+    public class StateConstant
+    {
+        public TransitionConstant[] m_TransitionConstantArray;
+        public int[] m_BlendTreeConstantIndexArray;
+        public LeafInfoConstant[] m_LeafInfoArray;
+        public BlendTreeConstant[] m_BlendTreeConstantArray;
+        public uint m_NameID;
+        public uint m_PathID;
+        public uint m_FullPathID;
+        public uint m_TagID;
+        public uint m_SpeedParamID;
+        public uint m_MirrorParamID;
+        public uint m_CycleOffsetParamID;
+        public float m_Speed;
+        public float m_CycleOffset;
+        public bool m_IKOnFeet;
+        public bool m_WriteDefaultValues;
+        public bool m_Loop;
+        public bool m_Mirror;
+
+        public StateConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+
+            int numTransistions = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_TransitionConstantArray = new TransitionConstant[numTransistions];
+            for (int i = 0; i < numTransistions; i++)
+            {
+                m_TransitionConstantArray[i] = new TransitionConstant(objectInfo,content,objectOffset,ref index);
+            }
+
+            int count= BitConverter.ToInt32(content, index);
+            index += 4;
+            m_BlendTreeConstantIndexArray = new int[count];
+            for (int i=0;i<count;i++)
+            {
+                m_BlendTreeConstantIndexArray[i] = BitConverter.ToInt32(content, index);
+                index += 4;
+            }
+
+            if (version[0] < 5 || (version[0] == 5 && version[1] < 2)) //5.2 down
+            {
+                int numInfos = BitConverter.ToInt32(content, index);
+                index += 4;
+
+                m_LeafInfoArray = new LeafInfoConstant[numInfos];
+                for (int i = 0; i < numInfos; i++)
+                {
+                    m_LeafInfoArray[i] = new LeafInfoConstant(objectInfo, content, objectOffset, ref index);
+                }
+            }
+
+            int numBlends = BitConverter.ToInt32(content, index);
+            index += 4;
+            m_BlendTreeConstantArray = new BlendTreeConstant[numBlends];
+            for (int i = 0; i < numBlends; i++)
+            {
+                m_BlendTreeConstantArray[i] = new BlendTreeConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            m_NameID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
+            {
+                m_PathID = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+            if (version[0] >= 5) //5.0 and up
+            {
+                m_FullPathID = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+            m_TagID = BitConverter.ToUInt32(content, index);
+            index += 4;
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 1)) //5.1 and up
+            {
+                m_SpeedParamID = BitConverter.ToUInt32(content, index);
+                index += 4;
+
+                m_MirrorParamID = BitConverter.ToUInt32(content, index);
+                index += 4;
+
+                m_CycleOffsetParamID = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
+            {
+                var m_TimeParamID = BitConverter.ToUInt32(content, index);
+                index += 4;
+            }
+
+            m_Speed = BitConverter.ToSingle(content, index);
+            index += 4;
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 1)) //4.1 and up
+            {
+                m_CycleOffset = BitConverter.ToSingle(content, index);
+                index += 4;
+            }
+            m_IKOnFeet = content[index++] == 1;
+            if (version[0] >= 5) //5.0 and up
+            {
+                m_WriteDefaultValues = content[index++] == 1;
+            }
+
+            m_Loop = content[index++] == 1;
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 1)) //4.1 and up
+            {
+                m_Mirror = content[index++] == 1;
+            }
+
+            index += Util.GetAlignCount(index, objectOffset);
+        }
+    }
+
+    public class SelectorTransitionConstant
+    {
+        public uint m_Destination;
+        public ConditionConstant[] m_ConditionConstantArray;
+
+        public SelectorTransitionConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            m_Destination = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            int numConditions = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_ConditionConstantArray = new ConditionConstant[numConditions];
+            for (int i = 0; i < numConditions; i++)
+            {
+                m_ConditionConstantArray[i] = new ConditionConstant(objectInfo, content, objectOffset, ref index);
+            }
+        }
+    }
+
+    public class SelectorStateConstant
+    {
+        public SelectorTransitionConstant[] m_TransitionConstantArray;
+        public uint m_FullPathID;
+        public bool m_isEntry;
+
+        public SelectorStateConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int numTransitions = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_TransitionConstantArray = new SelectorTransitionConstant[numTransitions];
+            for (int i = 0; i < numTransitions; i++)
+            {
+                m_TransitionConstantArray[i] = new SelectorTransitionConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            m_FullPathID = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_isEntry = content[index++] == 1;
+            index += Util.GetAlignCount(index, objectOffset);
+        }
+    }
+
+    public class StateMachineConstant
+    {
+        public StateConstant[] m_StateConstantArray;
+        public TransitionConstant[] m_AnyStateTransitionConstantArray;
+        public SelectorStateConstant[] m_SelectorStateConstantArray;
+        public uint m_DefaultState;
+        public uint m_MotionSetCount;
+
+        public StateMachineConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+
+            int numStates = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_StateConstantArray = new StateConstant[numStates];
+            for (int i = 0; i < numStates; i++)
+            {
+                m_StateConstantArray[i] = new StateConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            int numAnyStates = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_AnyStateTransitionConstantArray = new TransitionConstant[numAnyStates];
+            for (int i = 0; i < numAnyStates; i++)
+            {
+                m_AnyStateTransitionConstantArray[i] = new TransitionConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            if (version[0] >= 5) //5.0 and up
+            {
+                int numSelectors = BitConverter.ToInt32(content, index);
+                index += 4;
+                m_SelectorStateConstantArray = new SelectorStateConstant[numSelectors];
+                for (int i = 0; i < numSelectors; i++)
+                {
+                    m_SelectorStateConstantArray[i] = new SelectorStateConstant(objectInfo, content, objectOffset, ref index);
+                }
+            }
+
+            m_DefaultState = BitConverter.ToUInt32(content, index);
+            index += 4;
+
+            m_MotionSetCount = BitConverter.ToUInt32(content, index);
+            index += 4;
+        }
+    }
+
+    public class ValueArray
+    {
+        public bool[] m_BoolValues;
+        public int[] m_IntValues;
+        public float[] m_FloatValues;
+        public Vector4f[] m_VectorValues;
+        public Vector3f[] m_PositionValues;
+        public Vector4f[] m_QuaternionValues;
+        public Vector3f[] m_ScaleValues;
+
+        public ValueArray(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            var version = objectInfo.UnityFileVersion;
+
+            int count = 0;
+            if (version[0] < 5 || (version[0] == 5 && version[1] < 5)) //5.5 down
+            {
+                count= BitConverter.ToInt32(content, index);
+                index += 4;
+                m_BoolValues = new bool[count];
+                for(int i=0;i<count;i++)
+                {
+                    m_BoolValues[i] = content[index++] == 1;
+                }
+                index += Util.GetAlignCount(index, objectOffset);
+
+
+                count = BitConverter.ToInt32(content, index);
+                index += 4;
+                m_IntValues = new int[count];
+                for (int i = 0; i < count; i++)
+                {
+                    m_IntValues[i] = BitConverter.ToInt32(content, index);
+                    index += 4;
+                }
+
+
+                count = BitConverter.ToInt32(content, index);
+                index += 4;
+                m_FloatValues = new float[count];
+                for (int i = 0; i < count; i++)
+                {
+                    m_FloatValues[i] = BitConverter.ToSingle(content, index);
+                    index += 4;
+                }
+            }
+
+            if (version[0] < 4 || (version[0] == 4 && version[1] < 3)) //4.3 down
+            {
+                count = BitConverter.ToInt32(content, index);
+                index += 4;
+                m_VectorValues = new Vector4f[count];
+                for(int i=0;i< count;i++)
+                {
+                    m_VectorValues[i] = new Vector4f();
+                    m_VectorValues[i].x= BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_VectorValues[i].y = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_VectorValues[i].z = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_VectorValues[i].w = BitConverter.ToSingle(content, index);
+                    index += 4;
+                }
+            }
+            else
+            {
+                int numPosValues = BitConverter.ToInt32(content, index);
+                index += 4;
+
+                m_PositionValues = new Vector3f[numPosValues];
+                for (int i = 0; i < numPosValues; i++)
+                {
+                    m_PositionValues[i] = new Vector3f();
+
+                    m_PositionValues[i].x = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_PositionValues[i].y = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_PositionValues[i].z = BitConverter.ToSingle(content, index);
+                    index += 4;
+
+                    if (!(version[0] > 5 || (version[0] == 5 && version[1] >= 4)))
+                    {
+                        //5.4 and up
+                        BitConverter.ToSingle(content, index);
+                        index += 4;
+                    }
+                }
+
+                count = BitConverter.ToInt32(content, index);
+                index += 4;
+                m_QuaternionValues = new Vector4f[count];
+                for (int i = 0; i < count; i++)
+                {
+                    m_QuaternionValues[i] = new Vector4f();
+                    m_QuaternionValues[i].x = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_QuaternionValues[i].y = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_QuaternionValues[i].z = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_QuaternionValues[i].w = BitConverter.ToSingle(content, index);
+                    index += 4;
+                }
+
+
+                int numScaleValues = BitConverter.ToInt32(content, index);
+                index += 4;
+                m_ScaleValues = new Vector3f[numScaleValues];
+                for (int i = 0; i < numScaleValues; i++)
+                {
+                    m_ScaleValues[i] = new Vector3f();
+
+                    m_ScaleValues[i].x = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_ScaleValues[i].y = BitConverter.ToSingle(content, index);
+                    index += 4;
+                    m_ScaleValues[i].z = BitConverter.ToSingle(content, index);
+                    index += 4;
+
+                    if (!(version[0] > 5 || (version[0] == 5 && version[1] >= 4)))
+                    {
+                        //5.4 and up
+                        BitConverter.ToSingle(content, index);
+                        index += 4;
+                    }
+                }
+
+                if (version[0] > 5 || (version[0] == 5 && version[1] >= 5)) //5.5 and up
+                {
+                    count = BitConverter.ToInt32(content, index);
+                    index += 4;
+                    m_FloatValues = new float[count];
+                    for (int i=0;i<count;i++)
+                    {
+                        m_FloatValues[i]= BitConverter.ToSingle(content, index);
+                        index += 4;
+                    }
+
+                    count = BitConverter.ToInt32(content, index);
+                    index += 4;
+                    m_IntValues = new int[count];
+                    for (int i = 0; i < count; i++)
+                    {
+                        m_IntValues[i] = BitConverter.ToInt32(content, index);
+                        index += 4;
+                    }
+
+                    count = BitConverter.ToInt32(content, index);
+                    index += 4;
+                    m_BoolValues = new bool[count];
+                    for (int i = 0; i < count; i++)
+                    {
+                        m_BoolValues[i] = content[index++] == 1;
+                        index += 4;
+                    }
+                    index += Util.GetAlignCount(index, objectOffset);
+                }
+            }
+        }
+    }
+
+    public class ControllerConstant
+    {
+        public LayerConstant[] m_LayerArray;
+        public StateMachineConstant[] m_StateMachineArray;
+        public ValueArrayConstant m_Values;
+        public ValueArray m_DefaultValues;
+
+        public ControllerConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
+        {
+            int numLayers = BitConverter.ToInt32(content, index);
+            index += 4;
+
+            m_LayerArray = new LayerConstant[numLayers];
+            for (int i = 0; i < numLayers; i++)
+            {
+                m_LayerArray[i] = new LayerConstant(objectInfo,content,objectOffset,ref index);
+            }
+
+            int numStates = BitConverter.ToInt32(content, index);
+            index += 4;
+            m_StateMachineArray = new StateMachineConstant[numStates];
+            for (int i = 0; i < numStates; i++)
+            {
+                m_StateMachineArray[i] = new StateMachineConstant(objectInfo, content, objectOffset, ref index);
+            }
+
+            m_Values = new ValueArrayConstant(objectInfo, content, objectOffset, ref index);
+            m_DefaultValues = new ValueArray(objectInfo, content, objectOffset, ref index);
+        }
     }
 
     public class AnimatorController : UnityObject
@@ -51,11 +969,10 @@ namespace UnityAnalyzer
             get { return animatorControllerName; }
         }
 
-        public List<AnimatorControllerLayer> layerList = new List<AnimatorControllerLayer>();
+        public List<SerializedObjectIdentifier> AnimationClips { get; private set; }
+        public ControllerConstant ControllerConstant { get; private set; }
 
-        public List<AnimatorControllerState> stateList = new List<AnimatorControllerState>();
-
-        public List<AnimatorControllerParam> paramList = new List<AnimatorControllerParam>();
+        public KeyValuePair<uint, string>[] TOS { get; private set; }
 
         public override UserControl CreateObjectInfoPanel()
         {
@@ -81,209 +998,32 @@ namespace UnityAnalyzer
 
             ret.animatorControllerName = Util.readStringAndAlign(content, objectOffset, ref index);
 
+            int controllerSize= BitConverter.ToInt32(content, index);
             index += 4;
 
-            //读取层数
-            int layerCount = BitConverter.ToInt32(content, index);
+            ret.ControllerConstant = new ControllerConstant(objectInfo, content, objectOffset, ref index);
+
+            int tosSize = BitConverter.ToInt32(content, index);
             index += 4;
 
-            for (int i = 0; i < layerCount;i++ )
+            ret.TOS = new KeyValuePair<uint, string>[tosSize];
+            for (int i = 0; i < tosSize; i++)
             {
-                AnimatorControllerLayer layer = new AnimatorControllerLayer();
-                index += 0x14;
-                layer.layerNameMapKey = BitConverter.ToUInt32(content, index);
+                uint v= BitConverter.ToUInt32(content, index);
                 index += 4;
-                index += 0xC;
 
-                ret.layerList.Add(layer);
+                string s = Util.readStringAndAlign(content, objectOffset, ref index);
+                ret.TOS[i] = new KeyValuePair<uint, string>(v, s);
             }
 
+            int numClips = BitConverter.ToInt32(content, index);
             index += 4;
-            //先读第一层的State数
-            int stateCount = 0;
-
-            for (int i = 0; i < layerCount; i++)
+            ret.AnimationClips = new List<SerializedObjectIdentifier>();
+            for (int i = 0; i < numClips; i++)
             {
-                stateCount = BitConverter.ToInt32(content, index);
-                index += 4;
-
-                AnimatorControllerLayer layer = ret.layerList[i];
-                //TODO：有Motion和无Motion是不同的大小
-                for(int j=0;j<stateCount;j++)
-                {
-                    AnimatorControllerState state = new AnimatorControllerState();
-                    state.layer = layer;
-
-                    int stag = BitConverter.ToInt32(content, index + 8);
-                    if(stag==0)
-                    {
-                        //表示有Motion，一个State的大小为0x78
-                        state.motionMapKey = BitConverter.ToUInt32(content, index+0x14);
-                        index += 0x14 + 0x50 - 4;
-
-                        state.stateNameMapKey = BitConverter.ToUInt32(content, index);
-                        index += 4;
-
-                        index += 0x60 - 0x50 + 4;
-                    }
-                    else
-                    {
-                        //表示无Motion     一个State 的大小为0x34
-                        index += 0x1c;
-                        state.stateNameMapKey = BitConverter.ToUInt32(content, index);
-                        index += 4;
-
-                        index += 0x14;
-
-                    }
-
-                    ret.stateList.Add(state);
-                }
-
-                index += 0xC;
+                ret.AnimationClips.Add(Util.ReadNextSerializedObjectIdentifier(content, ref index, objectInfo));
             }
 
-            //开始读取参数
-            int paramCount = BitConverter.ToInt32(content, index);
-            index += 4;
-            for (int i = 0; i < paramCount;i++ )
-            {
-                //1,3,4,9分别表示Float int bool trigger
-                AnimatorControllerParam p = new AnimatorControllerParam();
-                ret.paramList.Add(p);
-
-                p.paramNameKey = BitConverter.ToUInt32(content, index);
-                index += 4;
-
-                index += 4;
-                p.paramType =(AnimatorControllerParamType) BitConverter.ToInt32(content, index);
-                index += 4;
-
-                index += 4;
-           }
-
-            
-            int pos = index;
-
-            while (true)
-            {
-                if (content[pos] == 0x12 &&
-                    content[pos + 1] == 0 &&
-                    content[pos + 2] == 0 &&
-                    content[pos + 3] == 0 &&
-                    content[pos + 4] == 0x53 &&
-                    content[pos + 5] == 0x74 &&
-                    content[pos + 6] == 0x61 &&
-                    content[pos + 7] == 0x74)
-                {
-                    break;
-                }
-                pos++;
-                if (pos >= content.Length)
-                {
-                    throw new Exception("Parsing AnimatorController ERROR");
-                }
-            }
-            index = pos - 8 - 0x18;
-
-            pos = index;
-
-            while (true)
-            {
-                bool bFound = true;
-                for (int k = 0; k < 16; k++)
-                {
-                    if (content[pos + k] != 0)
-                    {
-                        bFound = false;
-                        break;
-                    }
-                }
-                if (bFound == false)
-                {
-                    pos--;
-                    continue;
-                }
-                if (content[pos + 16] != 0)
-                {
-                    index = pos + 16;
-                    break;
-                }
-                else
-                {
-                    pos--;
-                    continue;
-                }
-            }
-
-
-
-
-            //int valCount=0;
-            //while(true)
-            //{
-            //    valCount = BitConverter.ToInt32(content, index);
-            //    index += 4;
-            //    if(valCount==0)
-            //    {
-            //        index -= 8;
-            //    }
-            //    else
-            //    {
-            //        break;
-            //    }
-            //}
-
-            int valCount = BitConverter.ToInt32(content, index);
-            index += 4;
-
-            Dictionary<uint, string> valMap = new Dictionary<uint, string>();
-            for (int i = 0; i < valCount;i++ )
-            {
-                uint key = BitConverter.ToUInt32(content, index);
-                index += 4;
-                string valstring = Util.readStringAndAlign(content, objectOffset, ref index);
-                valMap.Add(key, valstring);
-            }
-
-            int clipCount = BitConverter.ToInt32(content, index);
-            index += 4;
-            List<SerializedObjectIdentifier> seoList = new List<SerializedObjectIdentifier>();
-            for (int i = 0; i < clipCount;i++ )
-            {
-                seoList.Add(Util.ReadNextSerializedObjectIdentifier(content, ref index, objectInfo));
-            }
-
-            foreach(AnimatorControllerLayer l in ret.layerList)
-            {
-                l.name = valMap[l.layerNameMapKey];
-            }
-
-            int x=0;
-            foreach (AnimatorControllerState l in ret.stateList)
-            {
-                if (valMap.ContainsKey(l.stateNameMapKey)==false)
-                {
-                    l.name = "";
-                }
-                else
-                {
-                    l.name = valMap[l.stateNameMapKey];
-                }
-                if (l.motionMapKey != 0 && valMap.ContainsKey(l.motionMapKey))
-                {
-                    l.motionName = valMap[l.motionMapKey];
-                    l.animationClip = objectInfo.GetUnityObjectBySerializedObjectIdentifier(seoList[x++]) as AnimationClip;
-                }
-            }
-
-            foreach (AnimatorControllerParam l in ret.paramList)
-            {
-                if (valMap.ContainsKey(l.paramNameKey) == true)
-                {
-                    l.paramName = valMap[l.paramNameKey];
-                }
-            }
             return ret;
         }
     }
