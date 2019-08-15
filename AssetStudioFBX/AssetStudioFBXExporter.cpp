@@ -91,6 +91,12 @@ namespace AssetStudio
 
 		frameToNode = gcnew Dictionary<ImportedFrame^, size_t>();
 		meshFrames = imported->MeshList != nullptr ? gcnew List<ImportedFrame^>() : nullptr;
+
+		/*for (int i = 0; i < imported->RootFrame->Count; i++)
+		{
+			ExportFrame(pScene->GetRootNode(), imported->RootFrame[i]);
+		}*/
+
 		ExportFrame(pScene->GetRootNode(), imported->RootFrame);
 
 		if (imported->MeshList != nullptr)

@@ -87,11 +87,11 @@ namespace AssetStudio
             {
                 var frameList = new List<ImportedFrame>();
                 var tempTransform = m_Transform;
-                while (tempTransform.m_Father.TryGet(out var m_Father))
-                {
-                    frameList.Add(ConvertTransform(m_Father));
-                    tempTransform = m_Father;
-                }
+                //while (tempTransform.m_Father.TryGet(out var m_Father))
+                //{
+                //    frameList.Add(ConvertTransform(m_Father));
+                //    tempTransform = m_Father;
+                //}
                 if (frameList.Count > 0)
                 {
                     RootFrame = frameList[frameList.Count - 1];
