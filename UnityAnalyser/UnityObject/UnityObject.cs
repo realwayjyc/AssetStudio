@@ -297,6 +297,8 @@ namespace UnityAnalyzer
 
         public static UnityObject CreateUnityObject(ObjectInfo objectInfo, byte[] content, int objectOffset)
         {
+            ObjectReader objectReader = new ObjectReader(objectInfo, content, objectOffset);
+
             UnityObject ret = null;
             if ((int)objectInfo.ClassIDType < 0)
             {

@@ -178,6 +178,7 @@
     <Compile Include="ObjectPanel\UVAnimationPanel.xaml.cs">
       <DependentUpon>UVAnimationPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ObjectReader.cs" />
     <Compile Include="Quaternion.cs" />
     <Compile Include="ScriptFields\ButtonSFVS.cs" />
     <Compile Include="ScriptFields\CanvasScalerSFVS.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="UnityObject\AnimatorController.cs" />
     <Compile Include="UnityObject\AudioClip.cs" />
     <Compile Include="UnityObject\AudioSource.cs" />
+    <Compile Include="UnityObject\Avatar.cs" />
     <Compile Include="UnityObject\BlendShapeData.cs" />
     <Compile Include="UnityObject\BoneInfluence.cs" />
     <Compile Include="UnityObject\BoxCollider.cs" />
