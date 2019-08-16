@@ -107,32 +107,32 @@ namespace UnityAnalyzer
             get { return dataSize; }
         }
 
-        private List<Vector3f> vertexPos = new List<Vector3f>();
-        public List<Vector3f> VertexPos
+        private List<Vector3F> vertexPos = new List<Vector3F>();
+        public List<Vector3F> VertexPos
         {
             get { return vertexPos; }
         }
 
-        private List<Vector3f> vertexNormal = new List<Vector3f>();
-        public List<Vector3f> VertexNormal
+        private List<Vector3F> vertexNormal = new List<Vector3F>();
+        public List<Vector3F> VertexNormal
         {
             get { return vertexNormal; }
         }
 
-        private List<Vector4f> vertexTangent = new List<Vector4f>();
-        public List<Vector4f> VertexTangent
+        private List<Vector4F> vertexTangent = new List<Vector4F>();
+        public List<Vector4F> VertexTangent
         {
             get { return vertexTangent; }
         }
 
-        private List<Vector2f> vertexUV = new List<Vector2f>();
-        public List<Vector2f> VertexUV
+        private List<Vector2F> vertexUV = new List<Vector2F>();
+        public List<Vector2F> VertexUV
         {
             get { return vertexUV; }
         }
 
-        private List<Vector2f> vertexUV2 = new List<Vector2f>();
-        public List<Vector2f> VertexUV2
+        private List<Vector2F> vertexUV2 = new List<Vector2F>();
+        public List<Vector2F> VertexUV2
         {
             get { return vertexUV2; }
         }

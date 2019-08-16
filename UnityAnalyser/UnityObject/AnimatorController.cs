@@ -302,9 +302,9 @@ namespace UnityAnalyzer
 
     public class Blend2dDataConstant
     {
-        public Vector2f[] m_ChildPositionArray;
+        public Vector2F[] m_ChildPositionArray;
         public float[] m_ChildMagnitudeArray;
-        public Vector2f[] m_ChildPairVectorArray;
+        public Vector2F[] m_ChildPairVectorArray;
         public float[] m_ChildPairAvgMagInvArray;
         public MotionNeighborList[] m_ChildNeighborListArray;
 
@@ -312,15 +312,15 @@ namespace UnityAnalyzer
         {
             int count = BitConverter.ToInt32(content, index);
             index += 4;
-            m_ChildPositionArray = new Vector2f[count];
+            m_ChildPositionArray = new Vector2F[count];
 
             for (int i=0;i<count;i++)
             {
-                m_ChildPositionArray[i] = new Vector2f();
-                m_ChildPositionArray[i].x= BitConverter.ToSingle(content, index);
+                m_ChildPositionArray[i] = new Vector2F();
+                m_ChildPositionArray[i].X= BitConverter.ToSingle(content, index);
                 index += 4;
 
-                m_ChildPositionArray[i].y = BitConverter.ToSingle(content, index);
+                m_ChildPositionArray[i].Y = BitConverter.ToSingle(content, index);
                 index += 4;
             }
 
@@ -335,14 +335,14 @@ namespace UnityAnalyzer
 
             count = BitConverter.ToInt32(content, index);
             index += 4;
-            m_ChildPairVectorArray = new Vector2f[count];
+            m_ChildPairVectorArray = new Vector2F[count];
             for (int i = 0; i < count; i++)
             {
-                m_ChildPairVectorArray[i] = new Vector2f();
-                m_ChildPairVectorArray[i].x = BitConverter.ToSingle(content, index);
+                m_ChildPairVectorArray[i] = new Vector2F();
+                m_ChildPairVectorArray[i].X = BitConverter.ToSingle(content, index);
                 index += 4;
 
-                m_ChildPairVectorArray[i].y = BitConverter.ToSingle(content, index);
+                m_ChildPairVectorArray[i].Y = BitConverter.ToSingle(content, index);
                 index += 4;
             }
 
@@ -772,10 +772,10 @@ namespace UnityAnalyzer
         public bool[] m_BoolValues;
         public int[] m_IntValues;
         public float[] m_FloatValues;
-        public Vector4f[] m_VectorValues;
-        public Vector3f[] m_PositionValues;
-        public Vector4f[] m_QuaternionValues;
-        public Vector3f[] m_ScaleValues;
+        public Vector4F[] m_VectorValues;
+        public Vector3F[] m_PositionValues;
+        public Vector4F[] m_QuaternionValues;
+        public Vector3F[] m_ScaleValues;
 
         public ValueArray(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
         {
@@ -818,17 +818,17 @@ namespace UnityAnalyzer
             {
                 count = BitConverter.ToInt32(content, index);
                 index += 4;
-                m_VectorValues = new Vector4f[count];
+                m_VectorValues = new Vector4F[count];
                 for(int i=0;i< count;i++)
                 {
-                    m_VectorValues[i] = new Vector4f();
-                    m_VectorValues[i].x= BitConverter.ToSingle(content, index);
+                    m_VectorValues[i] = new Vector4F();
+                    m_VectorValues[i].X= BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_VectorValues[i].y = BitConverter.ToSingle(content, index);
+                    m_VectorValues[i].Y = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_VectorValues[i].z = BitConverter.ToSingle(content, index);
+                    m_VectorValues[i].Z = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_VectorValues[i].w = BitConverter.ToSingle(content, index);
+                    m_VectorValues[i].W = BitConverter.ToSingle(content, index);
                     index += 4;
                 }
             }
@@ -837,16 +837,16 @@ namespace UnityAnalyzer
                 int numPosValues = BitConverter.ToInt32(content, index);
                 index += 4;
 
-                m_PositionValues = new Vector3f[numPosValues];
+                m_PositionValues = new Vector3F[numPosValues];
                 for (int i = 0; i < numPosValues; i++)
                 {
-                    m_PositionValues[i] = new Vector3f();
+                    m_PositionValues[i] = new Vector3F();
 
-                    m_PositionValues[i].x = BitConverter.ToSingle(content, index);
+                    m_PositionValues[i].X = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_PositionValues[i].y = BitConverter.ToSingle(content, index);
+                    m_PositionValues[i].Y = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_PositionValues[i].z = BitConverter.ToSingle(content, index);
+                    m_PositionValues[i].Z = BitConverter.ToSingle(content, index);
                     index += 4;
 
                     if (!(version[0] > 5 || (version[0] == 5 && version[1] >= 4)))
@@ -859,33 +859,33 @@ namespace UnityAnalyzer
 
                 count = BitConverter.ToInt32(content, index);
                 index += 4;
-                m_QuaternionValues = new Vector4f[count];
+                m_QuaternionValues = new Vector4F[count];
                 for (int i = 0; i < count; i++)
                 {
-                    m_QuaternionValues[i] = new Vector4f();
-                    m_QuaternionValues[i].x = BitConverter.ToSingle(content, index);
+                    m_QuaternionValues[i] = new Vector4F();
+                    m_QuaternionValues[i].X = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_QuaternionValues[i].y = BitConverter.ToSingle(content, index);
+                    m_QuaternionValues[i].Y = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_QuaternionValues[i].z = BitConverter.ToSingle(content, index);
+                    m_QuaternionValues[i].Z = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_QuaternionValues[i].w = BitConverter.ToSingle(content, index);
+                    m_QuaternionValues[i].W = BitConverter.ToSingle(content, index);
                     index += 4;
                 }
 
 
                 int numScaleValues = BitConverter.ToInt32(content, index);
                 index += 4;
-                m_ScaleValues = new Vector3f[numScaleValues];
+                m_ScaleValues = new Vector3F[numScaleValues];
                 for (int i = 0; i < numScaleValues; i++)
                 {
-                    m_ScaleValues[i] = new Vector3f();
+                    m_ScaleValues[i] = new Vector3F();
 
-                    m_ScaleValues[i].x = BitConverter.ToSingle(content, index);
+                    m_ScaleValues[i].X = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_ScaleValues[i].y = BitConverter.ToSingle(content, index);
+                    m_ScaleValues[i].Y = BitConverter.ToSingle(content, index);
                     index += 4;
-                    m_ScaleValues[i].z = BitConverter.ToSingle(content, index);
+                    m_ScaleValues[i].Z = BitConverter.ToSingle(content, index);
                     index += 4;
 
                     if (!(version[0] > 5 || (version[0] == 5 && version[1] >= 4)))

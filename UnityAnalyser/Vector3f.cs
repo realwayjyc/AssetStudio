@@ -1,19 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace UnityAnalyzer
+﻿namespace UnityAnalyzer
 {
-    public class Vector3f
+    public struct Vector3F
     {
-        public float x;
-        public float y;
-        public float z;
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
 
         public override string ToString()
         {
-            return x.ToString() + "  " + y.ToString() + "  " + z.ToString();
+            return X + "  " + Y + "  " + Z;
+        }
+
+        public Vector3F(float x, float y, float z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public Vector3F(float x, float y, float z,float w)
+        {
+            X = x;
+            Y = y;
+            Z = z;
         }
     }
 }

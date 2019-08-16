@@ -50,14 +50,14 @@ namespace UnityAnalyzer
             get { return vertexCount; }
         }
 
-        private Vector3f center;
-        public Vector3f Center
+        private Vector3F center;
+        public Vector3F Center
         {
             get { return center; }
         }
 
-        private Vector3f extent;
-        public Vector3f Extent
+        private Vector3F extent;
+        public Vector3F Extent
         {
             get { return extent; }
         }

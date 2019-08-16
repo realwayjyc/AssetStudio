@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.IO;
-using System.Reflection;
-using UnityEngine;
 using Color = System.Drawing.Color;
 
 namespace UnityAnalyzer
@@ -128,46 +126,47 @@ namespace UnityAnalyzer
             return ReadNextSerializedObjectIdentifier(content, ref index, unityObject.ObjectInfo);
         }
 
-        public static Vector3f ReadNextVector3f(byte[] content, ref int index)
+        public static Vector3F ReadNextVector3f(byte[] content, ref int index)
         {
-            Vector3f ret=new Vector3f();
-            ret.x=BitConverter.ToSingle(content, index);
+            Vector3F ret=new Vector3F();
+            ret.X=BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.y = BitConverter.ToSingle(content, index);
+            ret.Y = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.z = BitConverter.ToSingle(content, index);
+            ret.Z = BitConverter.ToSingle(content, index);
             index += 4;
 
             return ret;
         }
 
-        public static Vector2f ReadNextVector2f(byte[] content, ref int index)
+        public static Vector2F ReadNextVector2f(byte[] content, ref int index)
         {
-            Vector2f ret = new Vector2f();
-            ret.x = BitConverter.ToSingle(content, index);
+            // ReSharper disable once UseObjectOrCollectionInitializer
+            Vector2F ret = new Vector2F();
+            ret.X = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.y = BitConverter.ToSingle(content, index);
+            ret.Y = BitConverter.ToSingle(content, index);
             index += 4;
 
             return ret;
         }
 
-        public static Vector4f ReadNextVector4f(byte[] content, ref int index)
+        public static Vector4F ReadNextVector4f(byte[] content, ref int index)
         {
-            Vector4f ret = new Vector4f();
-            ret.x = BitConverter.ToSingle(content, index);
+            Vector4F ret = new Vector4F();
+            ret.X = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.y = BitConverter.ToSingle(content, index);
+            ret.Y = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.z = BitConverter.ToSingle(content, index);
+            ret.Z = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.w = BitConverter.ToSingle(content, index);
+            ret.W = BitConverter.ToSingle(content, index);
             index += 4;
 
 

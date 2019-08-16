@@ -19,7 +19,7 @@ namespace UnityAnalyzer
         public string companyName;
         public string productName;
         public SerializedObjectIdentifier defaultCursor;
-        public Vector2f cursorHotSpot;
+        public Vector2F cursorHotSpot;
         public int defaultScreenWidth;
         public int defaultScreenHeight;
         public int defaultWebScreenWidth;
@@ -147,11 +147,11 @@ namespace UnityAnalyzer
 
             ret.defaultCursor = new SerializedObjectIdentifier(serializedFileIndex, identifier);
 
-            ret.cursorHotSpot = new Vector2f();
-            ret.cursorHotSpot.x = BitConverter.ToSingle(content, index);
+            ret.cursorHotSpot = new Vector2F();
+            ret.cursorHotSpot.X = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.cursorHotSpot.y = BitConverter.ToSingle(content, index);
+            ret.cursorHotSpot.Y = BitConverter.ToSingle(content, index);
             index += 4;
 
             ret.defaultScreenWidth = BitConverter.ToInt32(content, index);

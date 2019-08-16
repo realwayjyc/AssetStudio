@@ -8,8 +8,8 @@ namespace UnityAnalyzer
 {
     public class EllipsoidParticleEmitter : ParticleEmitter
     {
-        private Vector3f ellipsoid;
-        public Vector3f Ellipsoid
+        private Vector3F ellipsoid;
+        public Vector3F Ellipsoid
         {
             get { return ellipsoid; }
         }

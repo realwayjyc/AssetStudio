@@ -112,6 +112,9 @@
     <Compile Include="ObjectPanel\AudioSourcePanel.xaml.cs">
       <DependentUpon>AudioSourcePanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ObjectPanel\AvatarPanel.xaml.cs">
+      <DependentUpon>AvatarPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ObjectPanel\CameraPanel.xaml.cs">
       <DependentUpon>CameraPanel.xaml</DependentUpon>
     </Compile>
@@ -281,9 +284,9 @@
     <Compile Include="UnityObject\UVAnimation.cs" />
     <Compile Include="UnityObject\VertexData.cs" />
     <Compile Include="ValueConverter.cs" />
-    <Compile Include="Vector2f.cs" />
-    <Compile Include="Vector3f.cs" />
-    <Compile Include="Vector4f.cs" />
+    <Compile Include="Vector2F.cs" />
+    <Compile Include="Vector3F.cs" />
+    <Compile Include="Vector4F.cs" />
     <Compile Include="Vertex3f.cs" />
     <Page Include="Dictionary1.xaml">
       <SubType>Designer</SubType>
@@ -314,6 +317,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ObjectPanel\AudioSourcePanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\AvatarPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

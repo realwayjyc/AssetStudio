@@ -53,14 +53,14 @@ namespace UnityAnalyzer
             get { return lightMapIndexDynamic; }
         }
 
-        protected Vector4f lightMapST;
-        public Vector4f LightMapST
+        protected Vector4F lightMapST;
+        public Vector4F LightMapST
         {
             get { return lightMapST; }
         }
 
-        protected Vector4f lightMapSTDynamic;
-        public Vector4f LightMapSTDynamic
+        protected Vector4F lightMapSTDynamic;
+        public Vector4F LightMapSTDynamic
         {
             get { return lightMapSTDynamic; }
         }
@@ -143,17 +143,18 @@ namespace UnityAnalyzer
                 lightMapIndexDynamic = BitConverter.ToInt16(content, index); index += 2;
             }
 
-            lightMapST.x = BitConverter.ToSingle(content, index); index += 4;
-            lightMapST.y = BitConverter.ToSingle(content, index); index += 4;
-            lightMapST.z = BitConverter.ToSingle(content, index); index += 4;
-            lightMapST.w = BitConverter.ToSingle(content, index); index += 4;
+            lightMapST=new Vector4F();
+            lightMapST.X = BitConverter.ToSingle(content, index); index += 4;
+            lightMapST.Y = BitConverter.ToSingle(content, index); index += 4;
+            lightMapST.Z = BitConverter.ToSingle(content, index); index += 4;
+            lightMapST.W = BitConverter.ToSingle(content, index); index += 4;
 
             if (objectInfo.UnityFileVersion[0] == 5 && objectInfo.UnityFileVersion[1]==3)
             {
-                lightMapSTDynamic.x = BitConverter.ToSingle(content, index); index += 4;
-                lightMapSTDynamic.y = BitConverter.ToSingle(content, index); index += 4;
-                lightMapSTDynamic.z = BitConverter.ToSingle(content, index); index += 4;
-                lightMapSTDynamic.w = BitConverter.ToSingle(content, index); index += 4;
+                lightMapSTDynamic.X = BitConverter.ToSingle(content, index); index += 4;
+                lightMapSTDynamic.Y = BitConverter.ToSingle(content, index); index += 4;
+                lightMapSTDynamic.Z = BitConverter.ToSingle(content, index); index += 4;
+                lightMapSTDynamic.W = BitConverter.ToSingle(content, index); index += 4;
             }
 
 

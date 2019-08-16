@@ -62,8 +62,8 @@ namespace UnityAnalyzer
             get { return setting; }
         }
 
-        private Vector4f uvTransform;
-        public Vector4f UvTransform
+        private Vector4F uvTransform;
+        public Vector4F UvTransform
         {
             get { return uvTransform; }
         }
@@ -116,10 +116,10 @@ namespace UnityAnalyzer
 
             ret.setting = BitConverter.ToInt32(content, index); index += 4;
 
-            ret.uvTransform.x = BitConverter.ToSingle(content, index); index += 4;
-            ret.uvTransform.y = BitConverter.ToSingle(content, index); index += 4;
-            ret.uvTransform.z = BitConverter.ToSingle(content, index); index += 4;
-            ret.uvTransform.w = BitConverter.ToSingle(content, index); index += 4;
+            ret.uvTransform.X = BitConverter.ToSingle(content, index); index += 4;
+            ret.uvTransform.Y = BitConverter.ToSingle(content, index); index += 4;
+            ret.uvTransform.Z = BitConverter.ToSingle(content, index); index += 4;
+            ret.uvTransform.W = BitConverter.ToSingle(content, index); index += 4;
 
 
             return ret;

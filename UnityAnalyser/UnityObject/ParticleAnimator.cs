@@ -21,14 +21,14 @@ namespace UnityAnalyzer
             get { return colorAnimation; }
         }
 
-        private Vector3f worldRotationAxis;
-        public Vector3f WorldRotationAxis
+        private Vector3F worldRotationAxis;
+        public Vector3F WorldRotationAxis
         {
             get { return worldRotationAxis; }
         }
 
-        private Vector3f localRotationAxis;
-        public Vector3f LocalRotationAxis
+        private Vector3F localRotationAxis;
+        public Vector3F LocalRotationAxis
         {
             get { return localRotationAxis; }
         }
@@ -39,14 +39,14 @@ namespace UnityAnalyzer
             get { return sizeGrow; }
         }
 
-        private Vector3f rndForce;
-        public Vector3f RndForce
+        private Vector3F rndForce;
+        public Vector3F RndForce
         {
             get { return rndForce; }
         }
 
-        private Vector3f force;
-        public Vector3f Force
+        private Vector3F force;
+        public Vector3F Force
         {
             get { return force; }
         }

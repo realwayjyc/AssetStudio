@@ -48,8 +48,8 @@ namespace UnityAnalyzer
             get { return offsetY; }
         }
 
-        private Vector4f border;
-        public Vector4f Border
+        private Vector4F border;
+        public Vector4F Border
         {
             get { return border; }
         }
@@ -104,16 +104,16 @@ namespace UnityAnalyzer
             ret.offsetY = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.border.x = BitConverter.ToSingle(content, index);
+            ret.border.X = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.border.y = BitConverter.ToSingle(content, index);
+            ret.border.Y = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.border.z = BitConverter.ToSingle(content, index);
+            ret.border.Z = BitConverter.ToSingle(content, index);
             index += 4;
 
-            ret.border.w = BitConverter.ToSingle(content, index);
+            ret.border.W = BitConverter.ToSingle(content, index);
             index += 4;
 
             ret.pixelsToUnits = BitConverter.ToSingle(content, index);

@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace UnityAnalyzer
+﻿namespace UnityAnalyzer
 {
-    public class Vector2f
+    public struct Vector2F
     {
-        public float x;
-        public float y;
+        public float X { get; set; }
+        public float Y { get; set; }
 
         public override string ToString()
         {
-            return x.ToString()+"  "+y.ToString();
+            return X+"  "+Y;
+        }
+
+        public Vector2F(float x, float y)
+        {
+            X = x;
+            Y = y;
         }
     }
 }

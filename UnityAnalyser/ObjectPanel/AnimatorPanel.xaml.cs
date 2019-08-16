@@ -1,23 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace UnityAnalyzer
 {
     /// <summary>
     /// AnimatorPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class AnimatorPanel : UserControl
+    public partial class AnimatorPanel
     {
         private Animator animator;
         public AnimatorPanel()
@@ -34,11 +22,20 @@ namespace UnityAnalyzer
             if(animator.Avatar.serializedFileIndex==0 && animator.Avatar.identifierInFile==0)
             {
                 this.txtAvatar.Text = "[NULL]";
+                this.btnAavatar.DataContext = null;
             }
             else
             {
-                this.txtAvatar.Text = "0x" + animator.Avatar.identifierInFile.ToString("x") + 
-                    " " + "0x" + animator.Avatar.serializedFileIndex.ToString("x");
+                Avatar avatar = animator.GetAvatar();
+                if (avatar != null)
+                {
+                    this.txtAvatar.Text = avatar.Name;
+                }
+                else
+                {
+                    this.txtAvatar.Text = "[ERROR]";
+                }
+                this.btnAavatar.DataContext = avatar;
             }
 
             if (animator.Controller.serializedFileIndex == 0 && animator.Controller.identifierInFile == 0)
@@ -77,7 +74,11 @@ namespace UnityAnalyzer
 
         private void Button_ClickAvatar(object sender, RoutedEventArgs e)
         {
-
+            Avatar avatar = this.btnAavatar.DataContext as Avatar;
+            if (avatar != null)
+            {
+                MainWindow.instance.ShowUnityObject(avatar);
+            }
         }
 
         private void Button_ClickController(object sender, RoutedEventArgs e)

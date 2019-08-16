@@ -31,7 +31,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBox Grid.Row="0" Grid.Column="0" Text="True" x:Name="txtAvatar"  VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
-            <Button Content="Open" Width="45" Height="25" HorizontalAlignment="Left" Grid.Column="1" Click="Button_ClickAvatar" Margin="10,0,0,0"/>
+            <Button Content="Open" Name="btnAavatar" Width="45" Height="25" HorizontalAlignment="Left" Grid.Column="1" Click="Button_ClickAvatar" Margin="10,0,0,0"/>
         </Grid>
 
         <Label Grid.Row="1" Grid.Column="0" Content="Controller:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>

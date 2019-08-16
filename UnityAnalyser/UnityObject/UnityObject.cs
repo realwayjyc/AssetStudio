@@ -202,6 +202,10 @@ namespace UnityAnalyzer
                     {
                         return (this as AnimatorController).AnimatorControllerName;
                     }
+                    else if (this.ClassIDType == ClassIDType.CLASS_Avatar)
+                    {
+                        return (this as Avatar).AvatarName;
+                    }
                     return "";
                 }
                 catch (Exception ex)
@@ -297,7 +301,7 @@ namespace UnityAnalyzer
 
         public static UnityObject CreateUnityObject(ObjectInfo objectInfo, byte[] content, int objectOffset)
         {
-            ObjectReader objectReader = new ObjectReader(objectInfo, content, objectOffset);
+            ObjectReader objectReader = new ObjectReader(objectInfo, content, objectOffset + objectInfo.ByteStart);
 
             UnityObject ret = null;
             if ((int)objectInfo.ClassIDType < 0)
@@ -440,6 +444,9 @@ namespace UnityAnalyzer
                         ret = RenderSettings.Create(objectInfo, content, objectOffset);
                         break;
 
+                    case ClassIDType.CLASS_Avatar:
+                        ret = Avatar.Create(objectReader);
+                        break;
                     default:
                         ret = new UnityObject();
                         break;

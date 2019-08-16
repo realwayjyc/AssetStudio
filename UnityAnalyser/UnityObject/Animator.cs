@@ -88,8 +88,13 @@ namespace UnityAnalyzer
 
         public AnimatorController GetAnimatorController()
          {
-             return this.GetUnityObjectBySerializedObjectIdentifier(this.controller) as AnimatorController;
+             return this.GetUnityObjectBySerializedObjectIdentifier(Controller) as AnimatorController;
          }
+
+        public Avatar GetAvatar()
+        {
+            return this.GetUnityObjectBySerializedObjectIdentifier(Avatar) as Avatar;
+        }
 
         public static Animator Create(ObjectInfo objectInfo, byte[] content, int objectOffset)
         {

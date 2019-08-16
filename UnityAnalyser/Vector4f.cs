@@ -1,20 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace UnityAnalyzer
+﻿namespace UnityAnalyzer
 {
-    public struct Vector4f
+    public struct Vector4F
     {
-        public float x;
-        public float y;
-        public float z;
-        public float w;
+        public float X;
+        public float Y;
+        public float Z;
+        public float W;
 
         public override string ToString()
         {
-            return x.ToString() + "  " + y.ToString() + "  " + z.ToString() + "  " + w.ToString();
+            return X + "  " + Y + "  " + Z + "  " + W;
+        }
+
+        public Vector4F(float x, float y, float z, float w)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
         }
     }
 }

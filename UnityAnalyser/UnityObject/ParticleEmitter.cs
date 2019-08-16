@@ -59,20 +59,20 @@ namespace UnityAnalyzer
             set { maxEmission = value; }
         }
 
-        protected Vector3f worldVelocity;
-        public Vector3f WorldVelocity
+        protected Vector3F worldVelocity;
+        public Vector3F WorldVelocity
         {
             get { return worldVelocity; }
         }
 
-        protected Vector3f localVelocity;
-        public Vector3f LocalVelocity
+        protected Vector3F localVelocity;
+        public Vector3F LocalVelocity
         {
             get { return localVelocity; }
         }
 
-        protected Vector3f rndVelocity;
-        public Vector3f RndVelocity
+        protected Vector3F rndVelocity;
+        public Vector3F RndVelocity
         {
             get { return rndVelocity; }
         }
@@ -83,8 +83,8 @@ namespace UnityAnalyzer
             get { return emitterVelocityScale; }
         }
 
-        protected Vector3f tangentVelocity;
-        public Vector3f TangentVelocity
+        protected Vector3F tangentVelocity;
+        public Vector3F TangentVelocity
         {
             get { return tangentVelocity; }
         }
