@@ -67,6 +67,7 @@ namespace UnityAnalyzer
             txtTextureColorSpace.Text = texture2D.ColorSpace.ToString();
 
             txtImageSizexiamgecount.Text = "0x" + texture2D.ImageSizeXImageCount.ToString("X");
+            this.rotationFlipType = RotateFlipType.RotateNoneFlipY;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
