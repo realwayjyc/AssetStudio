@@ -7,19 +7,20 @@ namespace AssetStudio
     {
         public PPtr<Texture2D> texture;
         public PPtr<Texture2D> alphaTexture;
-        public System.Drawing.RectangleF textureRect;
+        public Rectf textureRect;
         public Vector2 textureRectOffset;
         public Vector2 atlasRectOffset;
         public Vector4 uvTransform;
         public float downscaleMultiplier;
         public SpriteSettings settingsRaw;
+        public SecondarySpriteTexture[] secondaryTextures;
 
         public SpriteAtlasData(ObjectReader reader)
         {
             var version = reader.version;
             texture = new PPtr<Texture2D>(reader);
             alphaTexture = new PPtr<Texture2D>(reader);
-            textureRect = reader.ReadRectangleF();
+            textureRect = new Rectf(reader);
             textureRectOffset = reader.ReadVector2();
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
             {
@@ -28,6 +29,16 @@ namespace AssetStudio
             uvTransform = reader.ReadVector4();
             downscaleMultiplier = reader.ReadSingle();
             settingsRaw = new SpriteSettings(reader);
+            if (version[0] > 2020 || (version[0] == 2020 && version[1] >= 2)) //2020.2 and up
+            {
+                var secondaryTexturesSize = reader.ReadInt32();
+                secondaryTextures = new SecondarySpriteTexture[secondaryTexturesSize];
+                for (int i = 0; i < secondaryTexturesSize; i++)
+                {
+                    secondaryTextures[i] = new SecondarySpriteTexture(reader);
+                }
+                reader.AlignStream();
+            }
         }
     }
 
@@ -35,6 +46,7 @@ namespace AssetStudio
     {
         public PPtr<Sprite>[] m_PackedSprites;
         public Dictionary<KeyValuePair<Guid, long>, SpriteAtlasData> m_RenderDataMap;
+        public bool m_IsVariant;
 
         public SpriteAtlas(ObjectReader reader) : base(reader)
         {
@@ -56,8 +68,9 @@ namespace AssetStudio
                 var value = new SpriteAtlasData(reader);
                 m_RenderDataMap.Add(new KeyValuePair<Guid, long>(first, second), value);
             }
-            //string m_Tag
-            //bool m_IsVariant
+            var m_Tag = reader.ReadAlignedString();
+            m_IsVariant = reader.ReadBoolean();
+            reader.AlignStream();
         }
     }
 }

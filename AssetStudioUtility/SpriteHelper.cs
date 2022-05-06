@@ -1,114 +1,115 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 
 namespace AssetStudio
 {
     public static class SpriteHelper
     {
-        public static Bitmap GetImageFromSprite(Sprite m_Sprite)
+        public static Image<Bgra32> GetImage(this Sprite m_Sprite)
         {
             if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGet(out var m_SpriteAtlas))
             {
                 if (m_SpriteAtlas.m_RenderDataMap.TryGetValue(m_Sprite.m_RenderDataKey, out var spriteAtlasData) && spriteAtlasData.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(m_Texture2D, m_Sprite, spriteAtlasData.textureRect, spriteAtlasData.textureRectOffset, spriteAtlasData.settingsRaw);
+                    return CutImage(m_Sprite, m_Texture2D, spriteAtlasData.textureRect, spriteAtlasData.textureRectOffset, spriteAtlasData.downscaleMultiplier, spriteAtlasData.settingsRaw);
                 }
             }
             else
             {
                 if (m_Sprite.m_RD.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(m_Texture2D, m_Sprite, m_Sprite.m_RD.textureRect, m_Sprite.m_RD.textureRectOffset, m_Sprite.m_RD.settingsRaw);
+                    return CutImage(m_Sprite, m_Texture2D, m_Sprite.m_RD.textureRect, m_Sprite.m_RD.textureRectOffset, m_Sprite.m_RD.downscaleMultiplier, m_Sprite.m_RD.settingsRaw);
                 }
             }
             return null;
         }
 
-        private static Bitmap CutImage(Texture2D m_Texture2D, Sprite m_Sprite, RectangleF textureRect, Vector2 textureRectOffset, SpriteSettings settingsRaw)
+        private static Image<Bgra32> CutImage(Sprite m_Sprite, Texture2D m_Texture2D, Rectf textureRect, Vector2 textureRectOffset, float downscaleMultiplier, SpriteSettings settingsRaw)
         {
-            var texture2D = new Texture2DConverter(m_Texture2D);
-            var originalImage = texture2D.ConvertToBitmap(false);
+            var originalImage = m_Texture2D.ConvertToImage(false);
             if (originalImage != null)
             {
                 using (originalImage)
                 {
-                    //var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
-                    var spriteImage = new Bitmap((int)textureRect.Width, (int)textureRect.Height, PixelFormat.Format32bppArgb);
-                    var destRect = new Rectangle(0, 0, (int)textureRect.Width, (int)textureRect.Height);
-                    using (var graphic = Graphics.FromImage(spriteImage))
+                    if (downscaleMultiplier > 0f && downscaleMultiplier != 1f)
                     {
-                        graphic.DrawImage(originalImage, destRect, textureRect, GraphicsUnit.Pixel);
+                        var width = (int)(m_Texture2D.m_Width / downscaleMultiplier);
+                        var height = (int)(m_Texture2D.m_Height / downscaleMultiplier);
+                        originalImage.Mutate(x => x.Resize(width, height));
                     }
+                    var rectX = (int)Math.Floor(textureRect.x);
+                    var rectY = (int)Math.Floor(textureRect.y);
+                    var rectRight = (int)Math.Ceiling(textureRect.x + textureRect.width);
+                    var rectBottom = (int)Math.Ceiling(textureRect.y + textureRect.height);
+                    rectRight = Math.Min(rectRight, originalImage.Width);
+                    rectBottom = Math.Min(rectBottom, originalImage.Height);
+                    var rect = new Rectangle(rectX, rectY, rectRight - rectX, rectBottom - rectY);
+                    var spriteImage = originalImage.Clone(x => x.Crop(rect));
                     if (settingsRaw.packed == 1)
                     {
                         //RotateAndFlip
                         switch (settingsRaw.packingRotation)
                         {
                             case SpritePackingRotation.kSPRFlipHorizontal:
-                                spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                                spriteImage.Mutate(x => x.Flip(FlipMode.Horizontal));
                                 break;
                             case SpritePackingRotation.kSPRFlipVertical:
-                                spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                                spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
                                 break;
                             case SpritePackingRotation.kSPRRotate180:
-                                spriteImage.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                                spriteImage.Mutate(x => x.Rotate(180));
                                 break;
                             case SpritePackingRotation.kSPRRotate90:
-                                spriteImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                                spriteImage.Mutate(x => x.Rotate(270));
                                 break;
                         }
+                    }
 
-                        //Tight
-                        if (settingsRaw.packingMode == SpritePackingMode.kSPMTight)
+                    //Tight
+                    if (settingsRaw.packingMode == SpritePackingMode.kSPMTight)
+                    {
+                        try
                         {
-                            try
+                            var triangles = GetTriangles(m_Sprite.m_RD);
+                            var polygons = triangles.Select(x => new Polygon(new LinearLineSegment(x.Select(y => new PointF(y.X, y.Y)).ToArray()))).ToArray();
+                            IPathCollection path = new PathCollection(polygons);
+                            var matrix = Matrix3x2.CreateScale(m_Sprite.m_PixelsToUnits);
+                            matrix *= Matrix3x2.CreateTranslation(m_Sprite.m_Rect.width * m_Sprite.m_Pivot.X - textureRectOffset.X, m_Sprite.m_Rect.height * m_Sprite.m_Pivot.Y - textureRectOffset.Y);
+                            path = path.Transform(matrix);
+                            var graphicsOptions = new GraphicsOptions
                             {
-                                var triangles = GetTriangles(m_Sprite.m_RD);
-                                var points = triangles.Select(x => x.Select(y => new PointF(y.X, y.Y)).ToArray());
-                                using (var path = new GraphicsPath())
-                                {
-                                    foreach (var p in points)
-                                    {
-                                        path.AddPolygon(p);
-                                    }
-                                    using (var matr = new Matrix())
-                                    {
-                                        if (m_Sprite.m_Pivot == Vector2.Zero) //5.4.2 down
-                                        {
-                                            matr.Translate(m_Sprite.m_Rect.Width * 0.5f - textureRectOffset.X, m_Sprite.m_Rect.Height * 0.5f - textureRectOffset.Y);
-                                        }
-                                        else
-                                        {
-                                            matr.Translate(m_Sprite.m_Rect.Width * m_Sprite.m_Pivot.X - textureRectOffset.X, m_Sprite.m_Rect.Height * m_Sprite.m_Pivot.Y - textureRectOffset.Y);
-                                        }
-                                        matr.Scale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits);
-                                        path.Transform(matr);
-                                        var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
-                                        using (var graphic = Graphics.FromImage(bitmap))
-                                        {
-                                            using (var brush = new TextureBrush(spriteImage))
-                                            {
-                                                graphic.FillPath(brush, path);
-                                                bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                                                return bitmap;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            catch
+                                Antialias = false,
+                                AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
+                            };
+                            var options = new DrawingOptions
                             {
-                                // ignored
+                                GraphicsOptions = graphicsOptions
+                            };
+                            using (var mask = new Image<Bgra32>(rect.Width, rect.Height, SixLabors.ImageSharp.Color.Black))
+                            {
+                                mask.Mutate(x => x.Fill(options, SixLabors.ImageSharp.Color.Red, path));
+                                var bursh = new ImageBrush(mask);
+                                spriteImage.Mutate(x => x.Fill(graphicsOptions, bursh));
+                                spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
+                                return spriteImage;
                             }
+                        }
+                        catch
+                        {
+                            // ignored
                         }
                     }
 
                     //Rectangle
-                    spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
                     return spriteImage;
                 }
             }
@@ -133,43 +134,43 @@ namespace AssetStudio
                 }
                 return triangles;
             }
-
-            return GetTriangles(m_RD.m_VertexData, m_RD.m_SubMeshes, m_RD.m_IndexBuffer); //5.6 and up
-        }
-
-        private static Vector2[][] GetTriangles(VertexData m_VertexData, SubMesh[] m_SubMeshes, byte[] m_IndexBuffer)
-        {
-            var triangles = new List<Vector2[]>();
-            var m_Channel = m_VertexData.m_Channels[0]; //kShaderChannelVertex
-            var m_Stream = m_VertexData.m_Streams[m_Channel.stream];
-            using (BinaryReader vertexReader = new BinaryReader(new MemoryStream(m_VertexData.m_DataSize)),
-                                indexReader = new BinaryReader(new MemoryStream(m_IndexBuffer)))
+            else //5.6 and up
             {
-                foreach (var subMesh in m_SubMeshes)
+                var triangles = new List<Vector2[]>();
+                var m_VertexData = m_RD.m_VertexData;
+                var m_Channel = m_VertexData.m_Channels[0]; //kShaderChannelVertex
+                var m_Stream = m_VertexData.m_Streams[m_Channel.stream];
+                using (var vertexReader = new BinaryReader(new MemoryStream(m_VertexData.m_DataSize)))
                 {
-                    vertexReader.BaseStream.Position = m_Stream.offset + subMesh.firstVertex * m_Stream.stride + m_Channel.offset;
-
-                    var vertices = new Vector2[subMesh.vertexCount];
-                    for (int v = 0; v < subMesh.vertexCount; v++)
+                    using (var indexReader = new BinaryReader(new MemoryStream(m_RD.m_IndexBuffer)))
                     {
-                        vertices[v] = vertexReader.ReadVector3();
-                        vertexReader.BaseStream.Position += m_Stream.stride - 12;
-                    }
+                        foreach (var subMesh in m_RD.m_SubMeshes)
+                        {
+                            vertexReader.BaseStream.Position = m_Stream.offset + subMesh.firstVertex * m_Stream.stride + m_Channel.offset;
 
-                    indexReader.BaseStream.Position = subMesh.firstByte;
+                            var vertices = new Vector2[subMesh.vertexCount];
+                            for (int v = 0; v < subMesh.vertexCount; v++)
+                            {
+                                vertices[v] = vertexReader.ReadVector3();
+                                vertexReader.BaseStream.Position += m_Stream.stride - 12;
+                            }
 
-                    var triangleCount = subMesh.indexCount / 3u;
-                    for (int i = 0; i < triangleCount; i++)
-                    {
-                        var first = indexReader.ReadUInt16() - subMesh.firstVertex;
-                        var second = indexReader.ReadUInt16() - subMesh.firstVertex;
-                        var third = indexReader.ReadUInt16() - subMesh.firstVertex;
-                        var triangle = new[] { vertices[first], vertices[second], vertices[third] };
-                        triangles.Add(triangle);
+                            indexReader.BaseStream.Position = subMesh.firstByte;
+
+                            var triangleCount = subMesh.indexCount / 3u;
+                            for (int i = 0; i < triangleCount; i++)
+                            {
+                                var first = indexReader.ReadUInt16() - subMesh.firstVertex;
+                                var second = indexReader.ReadUInt16() - subMesh.firstVertex;
+                                var third = indexReader.ReadUInt16() - subMesh.firstVertex;
+                                var triangle = new[] { vertices[first], vertices[second], vertices[third] };
+                                triangles.Add(triangle);
+                            }
+                        }
                     }
                 }
+                return triangles.ToArray();
             }
-            return triangles.ToArray();
         }
     }
 }

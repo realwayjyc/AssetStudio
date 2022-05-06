@@ -12,7 +12,7 @@ namespace AssetStudioGUI.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.9.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -109,25 +109,13 @@ namespace AssetStudioGUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("PNG")]
-        public string convertType {
+        [global::System.Configuration.DefaultSettingValueAttribute("Png")]
+        public global::AssetStudio.ImageFormat convertType {
             get {
-                return ((string)(this["convertType"]));
+                return ((global::AssetStudio.ImageFormat)(this["convertType"]));
             }
             set {
                 this["convertType"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool displayOriginalName {
-            get {
-                return ((bool)(this["displayOriginalName"]));
-            }
-            set {
-                this["displayOriginalName"] = value;
             }
         }
         
@@ -158,36 +146,36 @@ namespace AssetStudioGUI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool allFrames {
+        public bool exportAllNodes {
             get {
-                return ((bool)(this["allFrames"]));
+                return ((bool)(this["exportAllNodes"]));
             }
             set {
-                this["allFrames"] = value;
+                this["exportAllNodes"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool allBones {
+        public bool exportSkins {
             get {
-                return ((bool)(this["allBones"]));
+                return ((bool)(this["exportSkins"]));
             }
             set {
-                this["allBones"] = value;
+                this["exportSkins"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool skins {
+        public bool exportAnimations {
             get {
-                return ((bool)(this["skins"]));
+                return ((bool)(this["exportAnimations"]));
             }
             set {
-                this["skins"] = value;
+                this["exportAnimations"] = value;
             }
         }
         
@@ -236,6 +224,54 @@ namespace AssetStudioGUI.Properties {
             }
             set {
                 this["scaleFactor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool exportBlendShape {
+            get {
+                return ((bool)(this["exportBlendShape"]));
+            }
+            set {
+                this["exportBlendShape"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool castToBone {
+            get {
+                return ((bool)(this["castToBone"]));
+            }
+            set {
+                this["castToBone"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool restoreExtensionName {
+            get {
+                return ((bool)(this["restoreExtensionName"]));
+            }
+            set {
+                this["restoreExtensionName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool exportAllUvsAsDiffuseMaps {
+            get {
+                return ((bool)(this["exportAllUvsAsDiffuseMaps"]));
+            }
+            set {
+                this["exportAllUvsAsDiffuseMaps"] = value;
             }
         }
     }

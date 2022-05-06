@@ -10,17 +10,17 @@ namespace AssetStudio
     {
         public SerializedFile assetsFile;
         public long m_PathID;
-        public uint byteStart;
+        public long byteStart;
         public uint byteSize;
         public ClassIDType type;
         public SerializedType serializedType;
         public BuildTarget platform;
-        public uint m_Version;
+        public SerializedFileFormatVersion m_Version;
 
         public int[] version => assetsFile.version;
         public BuildType buildType => assetsFile.buildType;
 
-        public ObjectReader(EndianBinaryReader reader, SerializedFile assetsFile, ObjectInfo objectInfo) : base(reader.BaseStream, reader.endian)
+        public ObjectReader(EndianBinaryReader reader, SerializedFile assetsFile, ObjectInfo objectInfo) : base(reader.BaseStream, reader.Endian)
         {
             this.assetsFile = assetsFile;
             m_PathID = objectInfo.m_PathID;

@@ -132,30 +132,31 @@ namespace AssetStudio
     public class ImportedMesh
     {
         public string Path { get; set; }
+        public List<ImportedVertex> VertexList { get; set; }
         public List<ImportedSubmesh> SubmeshList { get; set; }
         public List<ImportedBone> BoneList { get; set; }
+        public bool hasNormal { get; set; }
+        public bool[] hasUV { get; set; }
+        public bool hasTangent { get; set; }
+        public bool hasColor { get; set; }
     }
 
     public class ImportedSubmesh
     {
-        public List<ImportedVertex> VertexList { get; set; }
         public List<ImportedFace> FaceList { get; set; }
         public string Material { get; set; }
+        public int BaseVertex { get; set; }
     }
 
     public class ImportedVertex
     {
-        public Vector3 Position { get; set; }
+        public Vector3 Vertex { get; set; }
+        public Vector3 Normal { get; set; }
+        public float[][] UV { get; set; }
+        public Vector4 Tangent { get; set; }
+        public Color Color { get; set; }
         public float[] Weights { get; set; }
         public int[] BoneIndices { get; set; }
-        public Vector3 Normal { get; set; }
-        public float[] UV { get; set; }
-        public Vector4 Tangent { get; set; }
-    }
-
-    public class ImportedVertexWithColour : ImportedVertex
-    {
-        public Color Colour { get; set; }
     }
 
     public class ImportedFace
@@ -205,7 +206,7 @@ namespace AssetStudio
     public class ImportedKeyframedAnimation
     {
         public string Name { get; set; }
-
+        public float SampleRate { get; set; }
         public List<ImportedAnimationKeyframedTrack> TrackList { get; set; }
 
         public ImportedAnimationKeyframedTrack FindTrack(string path)
@@ -227,20 +228,25 @@ namespace AssetStudio
         public List<ImportedKeyframe<Vector3>> Scalings = new List<ImportedKeyframe<Vector3>>();
         public List<ImportedKeyframe<Vector3>> Rotations = new List<ImportedKeyframe<Vector3>>();
         public List<ImportedKeyframe<Vector3>> Translations = new List<ImportedKeyframe<Vector3>>();
+        public ImportedBlendShape BlendShape;
     }
 
     public class ImportedKeyframe<T>
     {
         public float time { get; set; }
         public T value { get; set; }
-        public T inSlope { get; set; }
-        public T outSlope { get; set; }
 
         public ImportedKeyframe(float time, T value)
         {
             this.time = time;
             this.value = value;
         }
+    }
+
+    public class ImportedBlendShape
+    {
+        public string ChannelName;
+        public List<ImportedKeyframe<float>> Keyframes = new List<ImportedKeyframe<float>>();
     }
 
     public class ImportedMorph

@@ -13,7 +13,7 @@ namespace AssetStudio
         public PPtr(ObjectReader reader)
         {
             m_FileID = reader.ReadInt32();
-            m_PathID = reader.m_Version < 14 ? reader.ReadInt32() : reader.ReadInt64();
+            m_PathID = reader.m_Version < SerializedFileFormatVersion.kUnknown_14 ? reader.ReadInt32() : reader.ReadInt64();
             assetsFile = reader.assetsFile;
         }
 
@@ -35,10 +35,10 @@ namespace AssetStudio
                 if (index == -2)
                 {
                     var m_External = assetsFile.m_Externals[m_FileID - 1];
-                    var name = m_External.fileName.ToUpper();
+                    var name = m_External.fileName;
                     if (!assetsFileIndexCache.TryGetValue(name, out index))
                     {
-                        index = assetsFileList.FindIndex(x => x.upperFileName == name);
+                        index = assetsFileList.FindIndex(x => x.fileName.Equals(name, StringComparison.OrdinalIgnoreCase));
                         assetsFileIndexCache.Add(name, index);
                     }
                 }
@@ -70,7 +70,7 @@ namespace AssetStudio
         {
             if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.Objects.TryGetValue(m_PathID, out var obj))
+                if (sourceFile.ObjectsDic.TryGetValue(m_PathID, out var obj))
                 {
                     if (obj is T variable)
                     {
@@ -88,7 +88,7 @@ namespace AssetStudio
         {
             if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.Objects.TryGetValue(m_PathID, out var obj))
+                if (sourceFile.ObjectsDic.TryGetValue(m_PathID, out var obj))
                 {
                     if (obj is T2 variable)
                     {
@@ -104,8 +104,8 @@ namespace AssetStudio
 
         public void Set(T m_Object)
         {
-            var name = m_Object.assetsFile.upperFileName;
-            if (string.Equals(assetsFile.upperFileName, name, StringComparison.Ordinal))
+            var name = m_Object.assetsFile.fileName;
+            if (string.Equals(assetsFile.fileName, name, StringComparison.OrdinalIgnoreCase))
             {
                 m_FileID = 0;
             }
@@ -132,13 +132,13 @@ namespace AssetStudio
 
             if (!assetsFileIndexCache.TryGetValue(name, out index))
             {
-                index = assetsFileList.FindIndex(x => x.upperFileName == name);
+                index = assetsFileList.FindIndex(x => x.fileName.Equals(name, StringComparison.OrdinalIgnoreCase));
                 assetsFileIndexCache.Add(name, index);
             }
 
             m_PathID = m_Object.m_PathID;
         }
 
-        public bool IsNull() => m_PathID == 0 || m_FileID < 0;
+        public bool IsNull => m_PathID == 0 || m_FileID < 0;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AssetStudio;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,81 +7,124 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using AssetStudio;
+using System.Xml.Linq;
 using static AssetStudioGUI.Exporter;
 using Object = AssetStudio.Object;
 
 namespace AssetStudioGUI
 {
+    internal enum ExportType
+    {
+        Convert,
+        Raw,
+        Dump
+    }
+
+    internal enum ExportFilter
+    {
+        All,
+        Selected,
+        Filtered
+    }
+
+    internal enum ExportListType
+    {
+        XML
+    }
+
     internal static class Studio
     {
         public static AssetsManager assetsManager = new AssetsManager();
-        public static ScriptDumper scriptDumper = new ScriptDumper();
+        public static AssemblyLoader assemblyLoader = new AssemblyLoader();
         public static List<AssetItem> exportableAssets = new List<AssetItem>();
         public static List<AssetItem> visibleAssets = new List<AssetItem>();
+        internal static Action<string> StatusStripUpdate = x => { };
 
-        public static void ExtractFile(string[] fileNames)
+        public static int ExtractFolder(string path, string savePath)
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            int extractedCount = 0;
+            Progress.Reset();
+            var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            for (int i = 0; i < files.Length; i++)
             {
-                int extractedCount = 0;
-                Progress.Reset();
-                for (var i = 0; i < fileNames.Length; i++)
-                {
-                    var fileName = fileNames[i];
-                    var type = ImportHelper.CheckFileType(fileName, out var reader);
-                    if (type == FileType.BundleFile)
-                        extractedCount += ExtractBundleFile(fileName, reader);
-                    else if (type == FileType.WebFile)
-                        extractedCount += ExtractWebDataFile(fileName, reader);
-                    else
-                        reader.Dispose();
-                    Progress.Report(i + 1, fileNames.Length);
-                }
-
-                Logger.Info($"Finished extracting {extractedCount} files.");
-            });
+                var file = files[i];
+                var fileOriPath = Path.GetDirectoryName(file);
+                var fileSavePath = fileOriPath.Replace(path, savePath);
+                extractedCount += ExtractFile(file, fileSavePath);
+                Progress.Report(i + 1, files.Length);
+            }
+            return extractedCount;
         }
 
-        private static int ExtractBundleFile(string bundleFileName, EndianBinaryReader reader)
+        public static int ExtractFile(string[] fileNames, string savePath)
         {
-            Logger.Info($"Decompressing {Path.GetFileName(bundleFileName)} ...");
-            var bundleFile = new BundleFile(reader, bundleFileName);
-            reader.Dispose();
-            if (bundleFile.fileList.Count > 0)
+            int extractedCount = 0;
+            Progress.Reset();
+            for (var i = 0; i < fileNames.Length; i++)
             {
-                var extractPath = bundleFileName + "_unpacked\\";
+                var fileName = fileNames[i];
+                extractedCount += ExtractFile(fileName, savePath);
+                Progress.Report(i + 1, fileNames.Length);
+            }
+            return extractedCount;
+        }
+
+        public static int ExtractFile(string fileName, string savePath)
+        {
+            int extractedCount = 0;
+            var reader = new FileReader(fileName);
+            if (reader.FileType == FileType.BundleFile)
+                extractedCount += ExtractBundleFile(reader, savePath);
+            else if (reader.FileType == FileType.WebFile)
+                extractedCount += ExtractWebDataFile(reader, savePath);
+            else
+                reader.Dispose();
+            return extractedCount;
+        }
+
+        private static int ExtractBundleFile(FileReader reader, string savePath)
+        {
+            StatusStripUpdate($"Decompressing {reader.FileName} ...");
+            var bundleFile = new BundleFile(reader);
+            reader.Dispose();
+            if (bundleFile.fileList.Length > 0)
+            {
+                var extractPath = Path.Combine(savePath, reader.FileName + "_unpacked");
                 return ExtractStreamFile(extractPath, bundleFile.fileList);
             }
             return 0;
         }
 
-        private static int ExtractWebDataFile(string webFileName, EndianBinaryReader reader)
+        private static int ExtractWebDataFile(FileReader reader, string savePath)
         {
-            Logger.Info($"Decompressing {Path.GetFileName(webFileName)} ...");
+            StatusStripUpdate($"Decompressing {reader.FileName} ...");
             var webFile = new WebFile(reader);
             reader.Dispose();
-            if (webFile.fileList.Count > 0)
+            if (webFile.fileList.Length > 0)
             {
-                var extractPath = webFileName + "_unpacked\\";
+                var extractPath = Path.Combine(savePath, reader.FileName + "_unpacked");
                 return ExtractStreamFile(extractPath, webFile.fileList);
             }
             return 0;
         }
 
-        private static int ExtractStreamFile(string extractPath, List<StreamFile> fileList)
+        private static int ExtractStreamFile(string extractPath, StreamFile[] fileList)
         {
             int extractedCount = 0;
             foreach (var file in fileList)
             {
-                var filePath = extractPath + file.fileName;
-                if (!Directory.Exists(extractPath))
+                var filePath = Path.Combine(extractPath, file.path);
+                var fileDirectory = Path.GetDirectoryName(filePath);
+                if (!Directory.Exists(fileDirectory))
                 {
-                    Directory.CreateDirectory(extractPath);
+                    Directory.CreateDirectory(fileDirectory);
                 }
-                if (!File.Exists(filePath) && file.stream is MemoryStream stream)
+                if (!File.Exists(filePath))
                 {
-                    File.WriteAllBytes(filePath, stream.ToArray());
+                    using (var fileStream = File.Create(filePath))
+                    {
+                        file.stream.CopyTo(fileStream);
+                    }
                     extractedCount += 1;
                 }
                 file.stream.Dispose();
@@ -88,24 +132,23 @@ namespace AssetStudioGUI
             return extractedCount;
         }
 
-        public static void BuildAssetList(Dictionary<Object, AssetItem> tempDic, bool displayAll, bool displayOriginalName, out string productName)
+        public static (string, List<TreeNode>) BuildAssetData()
         {
-            Logger.Info("Building asset list...");
+            StatusStripUpdate("Building asset list...");
 
-            productName = string.Empty;
-            var assetsNameHash = new HashSet<string>();
-            var progressCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
-            int j = 0;
+            string productName = null;
+            var objectCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
+            var objectAssetItemDic = new Dictionary<Object, AssetItem>(objectCount);
+            var containers = new List<(PPtr<Object>, string)>();
+            int i = 0;
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
-                var tempExportableAssets = new List<AssetItem>();
-                AssetBundle ab = null;
-                foreach (var asset in assetsFile.Objects.Values)
+                foreach (var asset in assetsFile.Objects)
                 {
                     var assetItem = new AssetItem(asset);
-                    tempDic.Add(asset, assetItem);
-                    assetItem.UniqueID = " #" + j;
+                    objectAssetItemDic.Add(asset, assetItem);
+                    assetItem.UniqueID = " #" + i;
                     var exportable = false;
                     switch (asset)
                     {
@@ -126,7 +169,7 @@ namespace AssetStudioGUI
                             break;
                         case VideoClip m_VideoClip:
                             if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
-                                assetItem.FullSize = asset.byteSize + (long)m_VideoClip.m_Size;
+                                assetItem.FullSize = asset.byteSize + (long)m_VideoClip.m_ExternalResources.m_Size;
                             assetItem.Text = m_VideoClip.m_Name;
                             exportable = true;
                             break;
@@ -165,19 +208,22 @@ namespace AssetStudioGUI
                             productName = m_PlayerSettings.productName;
                             break;
                         case AssetBundle m_AssetBundle:
-                            ab = m_AssetBundle;
-                            assetItem.Text = ab.m_Name;
-                            break;
-                        case SpriteAtlas m_SpriteAtlas:
-                            foreach (var m_PackedSprite in m_SpriteAtlas.m_PackedSprites)
+                            foreach (var m_Container in m_AssetBundle.m_Container)
                             {
-                                if (m_PackedSprite.TryGet(out var m_Sprite))
+                                var preloadIndex = m_Container.Value.preloadIndex;
+                                var preloadSize = m_Container.Value.preloadSize;
+                                var preloadEnd = preloadIndex + preloadSize;
+                                for (int k = preloadIndex; k < preloadEnd; k++)
                                 {
-                                    if (m_Sprite.m_SpriteAtlas.IsNull())
-                                    {
-                                        m_Sprite.m_SpriteAtlas.Set(m_SpriteAtlas);
-                                    }
+                                    containers.Add((m_AssetBundle.m_PreloadTable[k], m_Container.Key));
                                 }
+                            }
+                            assetItem.Text = m_AssetBundle.m_Name;
+                            break;
+                        case ResourceManager m_ResourceManager:
+                            foreach (var m_Container in m_ResourceManager.m_Container)
+                            {
+                                containers.Add((m_Container.Value, m_Container.Key));
                             }
                             break;
                         case NamedObject m_NamedObject:
@@ -188,68 +234,40 @@ namespace AssetStudioGUI
                     {
                         assetItem.Text = assetItem.TypeString + assetItem.UniqueID;
                     }
-                    assetItem.SubItems.AddRange(new[] { assetItem.TypeString, assetItem.FullSize.ToString() });
-                    //处理同名文件
-                    if (!assetsNameHash.Add((assetItem.TypeString + assetItem.Text).ToUpper()))
+                    if (Properties.Settings.Default.displayAll || exportable)
                     {
-                        assetItem.Text += assetItem.UniqueID;
+                        exportableAssets.Add(assetItem);
                     }
-                    //处理非法文件名
-                    assetItem.Text = FixFileName(assetItem.Text);
-                    if (displayAll)
-                    {
-                        exportable = true;
-                    }
-                    if (exportable)
-                    {
-                        tempExportableAssets.Add(assetItem);
-                    }
-
-                    Progress.Report(++j, progressCount);
+                    Progress.Report(++i, objectCount);
                 }
-                if (displayOriginalName && ab != null)
-                {
-                    foreach (var item in tempExportableAssets)
-                    {
-                        var originalPath = ab.m_Container.FirstOrDefault(y => y.Value.asset.m_PathID == item.Asset.m_PathID).Key;
-                        if (!string.IsNullOrEmpty(originalPath))
-                        {
-                            var extension = Path.GetExtension(originalPath);
-                            if (!string.IsNullOrEmpty(extension) && item.Type == ClassIDType.TextAsset)
-                            {
-                                item.Extension = extension;
-                            }
-
-                            item.Text = Path.GetDirectoryName(originalPath) + "\\" + Path.GetFileNameWithoutExtension(originalPath);
-                            if (!assetsNameHash.Add((item.TypeString + item.Text).ToUpper()))
-                            {
-                                item.Text += item.UniqueID;
-                            }
-                        }
-                    }
-                }
-                exportableAssets.AddRange(tempExportableAssets);
-                tempExportableAssets.Clear();
             }
+            foreach ((var pptr, var container) in containers)
+            {
+                if (pptr.TryGet(out var obj))
+                {
+                    objectAssetItemDic[obj].Container = container;
+                }
+            }
+            foreach (var tmp in exportableAssets)
+            {
+                tmp.SetSubItems();
+            }
+            containers.Clear();
 
             visibleAssets = exportableAssets;
-            assetsNameHash.Clear();
-        }
 
-        public static List<TreeNode> BuildTreeStructure(Dictionary<Object, AssetItem> tempDic)
-        {
-            Logger.Info("Building tree structure...");
+            StatusStripUpdate("Building tree structure...");
 
             var treeNodeCollection = new List<TreeNode>();
             var treeNodeDictionary = new Dictionary<GameObject, GameObjectTreeNode>();
-            var progressCount = assetsManager.assetsFileList.Count;
-            int i = 0;
+            var assetsFileCount = assetsManager.assetsFileList.Count;
+            int j = 0;
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
-                var fileNode = new GameObjectTreeNode(assetsFile.fileName); //RootNode
+                var fileNode = new TreeNode(assetsFile.fileName); //RootNode
 
-                foreach (var obj in assetsFile.Objects.Values)
+                foreach (var obj in assetsFile.Objects)
                 {
                     if (obj is GameObject m_GameObject)
                     {
@@ -259,24 +277,26 @@ namespace AssetStudioGUI
                             treeNodeDictionary.Add(m_GameObject, currentNode);
                         }
 
-                        if (m_GameObject.m_MeshFilter != null)
+                        foreach (var pptr in m_GameObject.m_Components)
                         {
-                            if (m_GameObject.m_MeshFilter.m_Mesh.TryGet(out var m_Mesh))
+                            if (pptr.TryGet(out var m_Component))
                             {
-                                var item = tempDic[m_Mesh];
-                                item.TreeNode = currentNode;
+                                objectAssetItemDic[m_Component].TreeNode = currentNode;
+                                if (m_Component is MeshFilter m_MeshFilter)
+                                {
+                                    if (m_MeshFilter.m_Mesh.TryGet(out var m_Mesh))
+                                    {
+                                        objectAssetItemDic[m_Mesh].TreeNode = currentNode;
+                                    }
+                                }
+                                else if (m_Component is SkinnedMeshRenderer m_SkinnedMeshRenderer)
+                                {
+                                    if (m_SkinnedMeshRenderer.m_Mesh.TryGet(out var m_Mesh))
+                                    {
+                                        objectAssetItemDic[m_Mesh].TreeNode = currentNode;
+                                    }
+                                }
                             }
-                            tempDic[m_GameObject.m_MeshFilter].TreeNode = currentNode;
-                        }
-
-                        if (m_GameObject.m_SkinnedMeshRenderer != null)
-                        {
-                            if (m_GameObject.m_SkinnedMeshRenderer.m_Mesh.TryGet(out var m_Mesh))
-                            {
-                                var item = tempDic[m_Mesh];
-                                item.TreeNode = currentNode;
-                            }
-                            tempDic[m_GameObject.m_SkinnedMeshRenderer].TreeNode = currentNode;
                         }
 
                         var parentNode = fileNode;
@@ -287,11 +307,12 @@ namespace AssetStudioGUI
                             {
                                 if (m_Father.m_GameObject.TryGet(out var parentGameObject))
                                 {
-                                    if (!treeNodeDictionary.TryGetValue(parentGameObject, out parentNode))
+                                    if (!treeNodeDictionary.TryGetValue(parentGameObject, out var parentGameObjectNode))
                                     {
-                                        parentNode = new GameObjectTreeNode(parentGameObject);
-                                        treeNodeDictionary.Add(parentGameObject, parentNode);
+                                        parentGameObjectNode = new GameObjectTreeNode(parentGameObject);
+                                        treeNodeDictionary.Add(parentGameObject, parentGameObjectNode);
                                     }
+                                    parentNode = parentGameObjectNode;
                                 }
                             }
                         }
@@ -305,12 +326,13 @@ namespace AssetStudioGUI
                     treeNodeCollection.Add(fileNode);
                 }
 
-                Progress.Report(++i, progressCount);
+                Progress.Report(++j, assetsFileCount);
             }
-
             treeNodeDictionary.Clear();
 
-            return treeNodeCollection;
+            objectAssetItemDic.Clear();
+
+            return (productName, treeNodeCollection);
         }
 
         public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> BuildClassStructure()
@@ -320,27 +342,27 @@ namespace AssetStudioGUI
             {
                 if (typeMap.TryGetValue(assetsFile.unityVersion, out var curVer))
                 {
-                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Nodes != null))
+                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Type != null))
                     {
                         var key = type.classID;
                         if (type.m_ScriptTypeIndex >= 0)
                         {
                             key = -1 - type.m_ScriptTypeIndex;
                         }
-                        curVer[key] = new TypeTreeItem(key, type.m_Nodes);
+                        curVer[key] = new TypeTreeItem(key, type.m_Type);
                     }
                 }
                 else
                 {
                     var items = new SortedDictionary<int, TypeTreeItem>();
-                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Nodes != null))
+                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Type != null))
                     {
                         var key = type.classID;
                         if (type.m_ScriptTypeIndex >= 0)
                         {
                             key = -1 - type.m_ScriptTypeIndex;
                         }
-                        items.Add(key, new TypeTreeItem(key, type.m_Nodes));
+                        items[key] = new TypeTreeItem(key, type.m_Type);
                     }
                     typeMap.Add(assetsFile.unityVersion, items);
                 }
@@ -349,13 +371,7 @@ namespace AssetStudioGUI
             return typeMap;
         }
 
-        public static string FixFileName(string str)
-        {
-            if (str.Length >= 260) return Path.GetRandomFileName();
-            return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
-        }
-
-        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport)
+        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, ExportType exportType)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -367,95 +383,60 @@ namespace AssetStudioGUI
                 Progress.Reset();
                 foreach (var asset in toExportAssets)
                 {
-                    var exportpath = savePath + "\\";
-                    if (assetGroupSelectedIndex == 1)
+                    string exportPath;
+                    switch (Properties.Settings.Default.assetGroupOption)
                     {
-                        exportpath += Path.GetFileNameWithoutExtension(asset.SourceFile.fullName) + "_export\\";
+                        case 0: //type name
+                            exportPath = Path.Combine(savePath, asset.TypeString);
+                            break;
+                        case 1: //container path
+                            if (!string.IsNullOrEmpty(asset.Container))
+                            {
+                                exportPath = Path.Combine(savePath, Path.GetDirectoryName(asset.Container));
+                            }
+                            else
+                            {
+                                exportPath = savePath;
+                            }
+                            break;
+                        case 2: //source file
+                            if (string.IsNullOrEmpty(asset.SourceFile.originalPath))
+                            {
+                                exportPath = Path.Combine(savePath, asset.SourceFile.fileName + "_export");
+                            }
+                            else
+                            {
+                                exportPath = Path.Combine(savePath, Path.GetFileName(asset.SourceFile.originalPath) + "_export", asset.SourceFile.fileName);
+                            }
+                            break;
+                        default:
+                            exportPath = savePath;
+                            break;
                     }
-                    else if (assetGroupSelectedIndex == 0)
-                    {
-                        exportpath = savePath + "\\" + asset.TypeString + "\\";
-                    }
-                    Logger.Info($"Exporting {asset.TypeString}: {asset.Text}");
+                    exportPath += Path.DirectorySeparatorChar;
+                    StatusStripUpdate($"[{exportedCount}/{toExportCount}] Exporting {asset.TypeString}: {asset.Text}");
                     try
                     {
-                        switch (asset.Type)
+                        switch (exportType)
                         {
-                            case ClassIDType.Texture2D:
-                                if (ExportTexture2D(asset, exportpath))
+                            case ExportType.Raw:
+                                if (ExportRawFile(asset, exportPath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDType.AudioClip:
-                                if (ExportAudioClip(asset, exportpath))
+                            case ExportType.Dump:
+                                if (ExportDumpFile(asset, exportPath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDType.Shader:
-                                if (ExportShader(asset, exportpath))
+                            case ExportType.Convert:
+                                if (ExportConvertFile(asset, exportPath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDType.TextAsset:
-                                if (ExportTextAsset(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.MonoBehaviour:
-                                if (ExportMonoBehaviour(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Font:
-                                if (ExportFont(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Mesh:
-                                if (ExportMesh(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.VideoClip:
-                                if (ExportVideoClip(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.MovieTexture:
-                                if (ExportMovieTexture(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Sprite:
-                                if (ExportSprite(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Animator:
-                                if (ExportAnimator(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.AnimationClip:
-                                break;
-                            default:
-                                if (ExportRawFile(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-
                         }
                     }
                     catch (Exception ex)
@@ -473,23 +454,68 @@ namespace AssetStudioGUI
                     statusText += $" {toExportCount - exportedCount} assets skipped (not extractable or files already exist)";
                 }
 
-                Logger.Info(statusText);
+                StatusStripUpdate(statusText);
 
-                if (openAfterExport && exportedCount > 0)
+                if (Properties.Settings.Default.openAfterExport && exportedCount > 0)
                 {
-                    Process.Start(savePath);
+                    OpenFolderInExplorer(savePath);
                 }
             });
         }
 
-        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes, bool openAfterExport)
+        public static void ExportAssetsList(string savePath, List<AssetItem> toExportAssets, ExportListType exportListType)
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+                Progress.Reset();
+
+                switch (exportListType)
+                {
+                    case ExportListType.XML:
+                        var filename = Path.Combine(savePath, "assets.xml");
+                        var doc = new XDocument(
+                            new XElement("Assets",
+                                new XAttribute("filename", filename),
+                                new XAttribute("createdAt", DateTime.UtcNow.ToString("s")),
+                                toExportAssets.Select(
+                                    asset => new XElement("Asset",
+                                        new XElement("Name", asset.Text),
+                                        new XElement("Container", asset.Container),
+                                        new XElement("Type", new XAttribute("id", (int)asset.Type), asset.TypeString),
+                                        new XElement("PathID", asset.m_PathID),
+                                        new XElement("Source", asset.SourceFile.fullName),
+                                        new XElement("Size", asset.FullSize)
+                                    )
+                                )
+                            )
+                        );
+
+                        doc.Save(filename);
+
+                        break;
+                }
+
+                var statusText = $"Finished exporting asset list with {toExportAssets.Count()} items.";
+
+                StatusStripUpdate(statusText);
+
+                if (Properties.Settings.Default.openAfterExport && toExportAssets.Count() > 0)
+                {
+                    OpenFolderInExplorer(savePath);
+                }
+            });
+        }
+
+        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
                 var count = nodes.Cast<TreeNode>().Sum(x => x.Nodes.Count);
                 int k = 0;
                 Progress.Reset();
-                foreach (GameObjectTreeNode node in nodes)
+                foreach (TreeNode node in nodes)
                 {
                     //遍历一级子节点
                     foreach (GameObjectTreeNode j in node.Nodes)
@@ -506,13 +532,13 @@ namespace AssetStudioGUI
                         //处理非法文件名
                         var filename = FixFileName(j.Text);
                         //每个文件存放在单独的文件夹
-                        var targetPath = $"{savePath}{filename}\\";
+                        var targetPath = $"{savePath}{filename}{Path.DirectorySeparatorChar}";
                         //重名文件处理
                         for (int i = 1; ; i++)
                         {
                             if (Directory.Exists(targetPath))
                             {
-                                targetPath = $"{savePath}{filename} ({i})\\";
+                                targetPath = $"{savePath}{filename} ({i}){Path.DirectorySeparatorChar}";
                             }
                             else
                             {
@@ -521,7 +547,7 @@ namespace AssetStudioGUI
                         }
                         Directory.CreateDirectory(targetPath);
                         //导出FBX
-                        Logger.Info($"Exporting {filename}.fbx");
+                        StatusStripUpdate($"Exporting {filename}.fbx");
                         try
                         {
                             ExportGameObject(j.gameObject, targetPath);
@@ -532,14 +558,14 @@ namespace AssetStudioGUI
                         }
 
                         Progress.Report(++k, count);
-                        Logger.Info($"Finished exporting {filename}.fbx");
+                        StatusStripUpdate($"Finished exporting {filename}.fbx");
                     }
                 }
-                if (openAfterExport)
+                if (Properties.Settings.Default.openAfterExport)
                 {
-                    Process.Start(savePath);
+                    OpenFolderInExplorer(savePath);
                 }
-                Logger.Info("Finished");
+                StatusStripUpdate("Finished");
             });
         }
 
@@ -552,31 +578,31 @@ namespace AssetStudioGUI
             }
         }
 
-        public static void ExportAnimatorWithAnimationClip(AssetItem animator, List<AssetItem> animationList, string exportPath, bool openAfterExport)
+        public static void ExportAnimatorWithAnimationClip(AssetItem animator, List<AssetItem> animationList, string exportPath)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
                 Progress.Reset();
-                Logger.Info($"Exporting {animator.Text}");
+                StatusStripUpdate($"Exporting {animator.Text}");
                 try
                 {
                     ExportAnimator(animator, exportPath, animationList);
-                    if (openAfterExport)
+                    if (Properties.Settings.Default.openAfterExport)
                     {
-                        Process.Start(exportPath);
+                        OpenFolderInExplorer(exportPath);
                     }
                     Progress.Report(1, 1);
-                    Logger.Info($"Finished exporting {animator.Text}");
+                    StatusStripUpdate($"Finished exporting {animator.Text}");
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Export Animator:{animator.Text} error\r\n{ex.Message}\r\n{ex.StackTrace}");
-                    Logger.Info("Error in export");
+                    StatusStripUpdate("Error in export");
                 }
             });
         }
 
-        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, bool openAfterExport, List<AssetItem> animationList = null)
+        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, List<AssetItem> animationList = null)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -589,39 +615,64 @@ namespace AssetStudioGUI
                     Progress.Reset();
                     foreach (var gameObject in gameObjects)
                     {
-                        Logger.Info($"Exporting {gameObject.m_Name}");
+                        StatusStripUpdate($"Exporting {gameObject.m_Name}");
                         try
                         {
                             ExportGameObject(gameObject, exportPath, animationList);
-                            Logger.Info($"Finished exporting {gameObject.m_Name}");
+                            StatusStripUpdate($"Finished exporting {gameObject.m_Name}");
                         }
                         catch (Exception ex)
                         {
                             MessageBox.Show($"Export GameObject:{gameObject.m_Name} error\r\n{ex.Message}\r\n{ex.StackTrace}");
-                            Logger.Info("Error in export");
+                            StatusStripUpdate("Error in export");
                         }
 
                         Progress.Report(++i, count);
                     }
-                    if (openAfterExport)
+                    if (Properties.Settings.Default.openAfterExport)
                     {
-                        Process.Start(exportPath);
+                        OpenFolderInExplorer(exportPath);
                     }
                 }
                 else
                 {
-                    Logger.Info("No Object can be exported.");
+                    StatusStripUpdate("No Object selected for export.");
                 }
             });
         }
 
-        private static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
+        public static void ExportObjectsMergeWithAnimationClip(string exportPath, List<GameObject> gameObjects, List<AssetItem> animationList = null)
         {
-            foreach (GameObjectTreeNode i in nodes)
+            ThreadPool.QueueUserWorkItem(state =>
             {
-                if (i.Checked)
+                var name = Path.GetFileName(exportPath);
+                Progress.Reset();
+                StatusStripUpdate($"Exporting {name}");
+                try
                 {
-                    gameObjects.Add(i.gameObject);
+                    ExportGameObjectMerge(gameObjects, exportPath, animationList);
+                    Progress.Report(1, 1);
+                    StatusStripUpdate($"Finished exporting {name}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Export Model:{name} error\r\n{ex.Message}\r\n{ex.StackTrace}");
+                    StatusStripUpdate("Error in export");
+                }
+                if (Properties.Settings.Default.openAfterExport)
+                {
+                    OpenFolderInExplorer(Path.GetDirectoryName(exportPath));
+                }
+            });
+        }
+
+        public static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
+        {
+            foreach (TreeNode i in nodes)
+            {
+                if (i is GameObjectTreeNode gameObjectTreeNode && i.Checked)
+                {
+                    gameObjects.Add(gameObjectTreeNode.gameObject);
                 }
                 else
                 {
@@ -630,23 +681,40 @@ namespace AssetStudioGUI
             }
         }
 
-        public static string GetScriptString(ObjectReader reader)
+        public static TypeTree MonoBehaviourToTypeTree(MonoBehaviour m_MonoBehaviour)
         {
-            if (scriptDumper == null)
+            if (!assemblyLoader.Loaded)
             {
                 var openFolderDialog = new OpenFolderDialog();
                 openFolderDialog.Title = "Select Assembly Folder";
                 if (openFolderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    scriptDumper = new ScriptDumper(openFolderDialog.Folder);
+                    assemblyLoader.Load(openFolderDialog.Folder);
                 }
                 else
                 {
-                    scriptDumper = new ScriptDumper();
+                    assemblyLoader.Loaded = true;
                 }
             }
+            return m_MonoBehaviour.ConvertToTypeTree(assemblyLoader);
+        }
 
-            return scriptDumper.DumpScript(reader);
+        public static string DumpAsset(Object obj)
+        {
+            var str = obj.Dump();
+            if (str == null && obj is MonoBehaviour m_MonoBehaviour)
+            {
+                var type = MonoBehaviourToTypeTree(m_MonoBehaviour);
+                str = m_MonoBehaviour.Dump(type);
+            }
+            return str;
+        }
+
+        public static void OpenFolderInExplorer(string path)
+        {
+            var info = new ProcessStartInfo(path);
+            info.UseShellExecute = true;
+            Process.Start(info);
         }
     }
 }

@@ -7,10 +7,12 @@ namespace AssetStudio
 {
     public class ObjectInfo
     {
-        public uint byteStart;
+        public long byteStart;
         public uint byteSize;
         public int typeID;
         public int classID;
+        public ushort isDestroyed;
+        public byte stripped;
 
         public long m_PathID;
         public SerializedType serializedType;

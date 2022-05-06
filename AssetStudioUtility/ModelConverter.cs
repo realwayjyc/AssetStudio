@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -16,52 +14,84 @@ namespace AssetStudio
         public List<ImportedKeyframedAnimation> AnimationList { get; protected set; } = new List<ImportedKeyframedAnimation>();
         public List<ImportedMorph> MorphList { get; protected set; } = new List<ImportedMorph>();
 
+        private ImageFormat imageFormat;
         private Avatar avatar;
         private HashSet<AnimationClip> animationClipHashSet = new HashSet<AnimationClip>();
+        private Dictionary<AnimationClip, string> boundAnimationPathDic = new Dictionary<AnimationClip, string>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
         private Dictionary<Texture2D, string> textureNameDictionary = new Dictionary<Texture2D, string>();
         private Dictionary<Transform, ImportedFrame> transformDictionary = new Dictionary<Transform, ImportedFrame>();
+        Dictionary<uint, string> morphChannelNames = new Dictionary<uint, string>();
 
-        public ModelConverter(GameObject m_GameObject)
+        public ModelConverter(GameObject m_GameObject, ImageFormat imageFormat, AnimationClip[] animationList = null)
         {
+            this.imageFormat = imageFormat;
             if (m_GameObject.m_Animator != null)
             {
                 InitWithAnimator(m_GameObject.m_Animator);
-                CollectAnimationClip(m_GameObject.m_Animator);
+                if (animationList == null)
+                {
+                    CollectAnimationClip(m_GameObject.m_Animator);
+                }
             }
             else
+            {
                 InitWithGameObject(m_GameObject);
+            }
+            if (animationList != null)
+            {
+                foreach (var animationClip in animationList)
+                {
+                    animationClipHashSet.Add(animationClip);
+                }
+            }
             ConvertAnimations();
         }
 
-        public ModelConverter(GameObject m_GameObject, AnimationClip[] animationList)
+        public ModelConverter(string rootName, List<GameObject> m_GameObjects, ImageFormat imageFormat, AnimationClip[] animationList = null)
         {
-            if (m_GameObject.m_Animator != null)
+            this.imageFormat = imageFormat;
+            RootFrame = CreateFrame(rootName, Vector3.Zero, new Quaternion(0, 0, 0, 0), Vector3.One);
+            foreach (var m_GameObject in m_GameObjects)
             {
-                InitWithAnimator(m_GameObject.m_Animator);
+                if (m_GameObject.m_Animator != null && animationList == null)
+                {
+                    CollectAnimationClip(m_GameObject.m_Animator);
+                }
+
+                var m_Transform = m_GameObject.m_Transform;
+                ConvertTransforms(m_Transform, RootFrame);
+                CreateBonePathHash(m_Transform);
+            }
+            foreach (var m_GameObject in m_GameObjects)
+            {
+                var m_Transform = m_GameObject.m_Transform;
+                ConvertMeshRenderer(m_Transform);
+            }
+            if (animationList != null)
+            {
+                foreach (var animationClip in animationList)
+                {
+                    animationClipHashSet.Add(animationClip);
+                }
+            }
+            ConvertAnimations();
+        }
+
+        public ModelConverter(Animator m_Animator, ImageFormat imageFormat, AnimationClip[] animationList = null)
+        {
+            this.imageFormat = imageFormat;
+            InitWithAnimator(m_Animator);
+            if (animationList == null)
+            {
+                CollectAnimationClip(m_Animator);
             }
             else
-                InitWithGameObject(m_GameObject);
-            foreach (var animationClip in animationList)
             {
-                animationClipHashSet.Add(animationClip);
-            }
-            ConvertAnimations();
-        }
-
-        public ModelConverter(Animator m_Animator)
-        {
-            InitWithAnimator(m_Animator);
-            CollectAnimationClip(m_Animator);
-            ConvertAnimations();
-        }
-
-        public ModelConverter(Animator m_Animator, AnimationClip[] animationList)
-        {
-            InitWithAnimator(m_Animator);
-            foreach (var animationClip in animationList)
-            {
-                animationClipHashSet.Add(animationClip);
+                foreach (var animationClip in animationList)
+                {
+                    animationClipHashSet.Add(animationClip);
+                }
             }
             ConvertAnimations();
         }
@@ -87,11 +117,11 @@ namespace AssetStudio
             {
                 var frameList = new List<ImportedFrame>();
                 var tempTransform = m_Transform;
-                //while (tempTransform.m_Father.TryGet(out var m_Father))
-                //{
-                //    frameList.Add(ConvertTransform(m_Father));
-                //    tempTransform = m_Father;
-                //}
+                while (tempTransform.m_Father.TryGet(out var m_Father))
+                {
+                    frameList.Add(ConvertTransform(m_Father));
+                    tempTransform = m_Father;
+                }
                 if (frameList.Count > 0)
                 {
                     RootFrame = frameList[frameList.Count - 1];
@@ -134,6 +164,10 @@ namespace AssetStudio
                 {
                     if (animation.TryGet(out var animationClip))
                     {
+                        if (!boundAnimationPathDic.ContainsKey(animationClip))
+                        {
+                            boundAnimationPathDic.Add(animationClip, GetTransformPath(m_Transform));
+                        }
                         animationClipHashSet.Add(animationClip);
                     }
                 }
@@ -180,23 +214,6 @@ namespace AssetStudio
                         }
                 }
             }
-        }
-
-        /// <summary>
-        /// 对于骨骼不在GameObject内的情况
-        /// </summary>
-        /// <param name="trans"></param>
-        private void ReConvertTransform(Transform trans)
-        {
-            Transform transformIterator = trans;
-            List<Transform> transformList = new List<Transform>();
-            while (transformIterator.m_GameObject.ObjectPointed.m_Name != RootFrame.Name)
-            {
-                transformList.Insert(0, transformIterator);
-                transformIterator = transformIterator.m_Father.ObjectPointed;
-            }
-
-            ConvertTransforms(transformList[0], RootFrame);
         }
 
         private ImportedFrame ConvertTransform(Transform trans)
@@ -273,6 +290,16 @@ namespace AssetStudio
                 }
                 combine = true;
             }
+
+            iMesh.hasNormal = mesh.m_Normals?.Length > 0;
+            iMesh.hasUV = new bool[8];
+            for (int uv = 0; uv < 8; uv++)
+            {
+                iMesh.hasUV[uv] = mesh.GetUV(uv)?.Length > 0;
+            }
+            iMesh.hasTangent = mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4;
+            iMesh.hasColor = mesh.m_Colors?.Length > 0;
+
             int firstFace = 0;
             for (int i = 0; i < mesh.m_SubMeshes.Length; i++)
             {
@@ -294,71 +321,8 @@ namespace AssetStudio
                 }
                 ImportedMaterial iMat = ConvertMaterial(mat);
                 iSubmesh.Material = iMat.Name;
-                iSubmesh.VertexList = new List<ImportedVertex>((int)submesh.vertexCount);
-                var vertexColours = mesh.m_Colors != null && (mesh.m_Colors.Length == mesh.m_VertexCount * 3 || mesh.m_Colors.Length == mesh.m_VertexCount * 4);
-                for (var j = mesh.m_SubMeshes[i].firstVertex; j < mesh.m_SubMeshes[i].firstVertex + mesh.m_SubMeshes[i].vertexCount; j++)
-                {
-                    var iVertex = vertexColours ? new ImportedVertexWithColour() : new ImportedVertex();
-                    //Vertices
-                    int c = 3;
-                    if (mesh.m_Vertices.Length == mesh.m_VertexCount * 4)
-                    {
-                        c = 4;
-                    }
-                    iVertex.Position = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
-                    //Normals
-                    if (mesh.m_Normals?.Length > 0)
-                    {
-                        if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
-                        {
-                            c = 3;
-                        }
-                        else if (mesh.m_Normals.Length == mesh.m_VertexCount * 4)
-                        {
-                            c = 4;
-                        }
-                        iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
-                    }
-                    //Colors
-                    if (vertexColours)
-                    {
-                        if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
-                        {
-                            ((ImportedVertexWithColour)iVertex).Colour = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
-                        }
-                        else
-                        {
-                            ((ImportedVertexWithColour)iVertex).Colour = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
-                        }
-                    }
-                    //UV
-                    if (mesh.m_UV0 != null && mesh.m_UV0.Length == mesh.m_VertexCount * 2)
-                    {
-                        iVertex.UV = new[] { mesh.m_UV0[j * 2], mesh.m_UV0[j * 2 + 1] };
-                    }
-                    else if (mesh.m_UV1 != null && mesh.m_UV1.Length == mesh.m_VertexCount * 2)
-                    {
-                        iVertex.UV = new[] { mesh.m_UV1[j * 2], mesh.m_UV1[j * 2 + 1] };
-                    }
-                    //Tangent
-                    if (mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4)
-                    {
-                        iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], -mesh.m_Tangents[j * 4 + 3]);
-                    }
-                    //BoneInfluence
-                    if (mesh.m_Skin?.Length > 0)
-                    {
-                        var inf = mesh.m_Skin[j];
-                        iVertex.BoneIndices = new int[4];
-                        iVertex.Weights = new float[4];
-                        for (var k = 0; k < 4; k++)
-                        {
-                            iVertex.BoneIndices[k] = inf.boneIndex[k];
-                            iVertex.Weights[k] = inf.weight[k];
-                        }
-                    }
-                    iSubmesh.VertexList.Add(iVertex);
-                }
+                iSubmesh.BaseVertex = (int)mesh.m_SubMeshes[i].firstVertex;
+
                 //Face
                 iSubmesh.FaceList = new List<ImportedFace>(numFaces);
                 var end = firstFace + numFaces;
@@ -372,54 +336,160 @@ namespace AssetStudio
                     iSubmesh.FaceList.Add(face);
                 }
                 firstFace = end;
+
                 iMesh.SubmeshList.Add(iSubmesh);
+            }
+
+            // Shared vertex list
+            iMesh.VertexList = new List<ImportedVertex>((int)mesh.m_VertexCount);
+            for (var j = 0; j < mesh.m_VertexCount; j++)
+            {
+                var iVertex = new ImportedVertex();
+                //Vertices
+                int c = 3;
+                if (mesh.m_Vertices.Length == mesh.m_VertexCount * 4)
+                {
+                    c = 4;
+                }
+                iVertex.Vertex = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
+                //Normals
+                if (iMesh.hasNormal)
+                {
+                    if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
+                    {
+                        c = 3;
+                    }
+                    else if (mesh.m_Normals.Length == mesh.m_VertexCount * 4)
+                    {
+                        c = 4;
+                    }
+                    iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
+                }
+                //UV
+                iVertex.UV = new float[8][];
+                for (int uv = 0; uv < 8; uv++)
+                {
+                    if (iMesh.hasUV[uv])
+                    {
+                        var m_UV = mesh.GetUV(uv);
+                        if (m_UV.Length == mesh.m_VertexCount * 2)
+                        {
+                            c = 2;
+                        }
+                        else if (m_UV.Length == mesh.m_VertexCount * 3)
+                        {
+                            c = 3;
+                        }
+                        iVertex.UV[uv] = new[] { m_UV[j * c], m_UV[j * c + 1] };
+                    }
+                }
+                //Tangent
+                if (iMesh.hasTangent)
+                {
+                    iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
+                }
+                //Colors
+                if (iMesh.hasColor)
+                {
+                    if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
+                    {
+                        iVertex.Color = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
+                    }
+                    else
+                    {
+                        iVertex.Color = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
+                    }
+                }
+                //BoneInfluence
+                if (mesh.m_Skin?.Length > 0)
+                {
+                    var inf = mesh.m_Skin[j];
+                    iVertex.BoneIndices = new int[4];
+                    iVertex.Weights = new float[4];
+                    for (var k = 0; k < 4; k++)
+                    {
+                        iVertex.BoneIndices[k] = inf.boneIndex[k];
+                        iVertex.Weights[k] = inf.weight[k];
+                    }
+                }
+                iMesh.VertexList.Add(iVertex);
             }
 
             if (meshR is SkinnedMeshRenderer sMesh)
             {
                 //Bone
+                /*
+                 * 0 - None
+                 * 1 - m_Bones
+                 * 2 - m_BoneNameHashes
+                 */
+                var boneType = 0;
                 if (sMesh.m_Bones.Length > 0)
                 {
-                    var boneMax = Math.Min(sMesh.m_Bones.Length, mesh.m_BindPose.Length);
-                    iMesh.BoneList = new List<ImportedBone>(boneMax);
-                    for (int i = 0; i < boneMax; i++)
+                    if (sMesh.m_Bones.Length == mesh.m_BindPose.Length)
+                    {
+                        var verifiedBoneCount = sMesh.m_Bones.Count(x => x.TryGet(out _));
+                        if (verifiedBoneCount > 0)
+                        {
+                            boneType = 1;
+                        }
+                        if (verifiedBoneCount != sMesh.m_Bones.Length)
+                        {
+                            //尝试使用m_BoneNameHashes 4.3 and up
+                            if (mesh.m_BindPose.Length > 0 && (mesh.m_BindPose.Length == mesh.m_BoneNameHashes?.Length))
+                            {
+                                //有效bone数量是否大于SkinnedMeshRenderer
+                                var verifiedBoneCount2 = mesh.m_BoneNameHashes.Count(x => FixBonePath(GetPathFromHash(x)) != null);
+                                if (verifiedBoneCount2 > verifiedBoneCount)
+                                {
+                                    boneType = 2;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (boneType == 0)
+                {
+                    //尝试使用m_BoneNameHashes 4.3 and up
+                    if (mesh.m_BindPose.Length > 0 && (mesh.m_BindPose.Length == mesh.m_BoneNameHashes?.Length))
+                    {
+                        var verifiedBoneCount = mesh.m_BoneNameHashes.Count(x => FixBonePath(GetPathFromHash(x)) != null);
+                        if (verifiedBoneCount > 0)
+                        {
+                            boneType = 2;
+                        }
+                    }
+                }
+
+                if (boneType == 1)
+                {
+                    var boneCount = sMesh.m_Bones.Length;
+                    iMesh.BoneList = new List<ImportedBone>(boneCount);
+                    for (int i = 0; i < boneCount; i++)
                     {
                         var bone = new ImportedBone();
                         if (sMesh.m_Bones[i].TryGet(out var m_Transform))
                         {
-                            if (!IsExistTransformPath(m_Transform))
-                            {
-                                ReConvertTransform(m_Transform);
-                            }
                             bone.Path = GetTransformPath(m_Transform);
                         }
-                        if (!string.IsNullOrEmpty(bone.Path))
-                        {
-                            var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
-                            bone.Matrix = convert * mesh.m_BindPose[i] * convert;
-                            iMesh.BoneList.Add(bone);
-                        }
+                        var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
+                        bone.Matrix = convert * mesh.m_BindPose[i] * convert;
+                        iMesh.BoneList.Add(bone);
                     }
                 }
-                if (iMesh.BoneList == null || iMesh.BoneList.Count == 0)
+                else if (boneType == 2)
                 {
-                    if (mesh.m_BindPose.Length > 0 && mesh.m_BoneNameHashes?.Length > 0)
+                    var boneCount = mesh.m_BindPose.Length;
+                    iMesh.BoneList = new List<ImportedBone>(boneCount);
+                    for (int i = 0; i < boneCount; i++)
                     {
-                        var boneMax = Math.Min(mesh.m_BindPose.Length, mesh.m_BoneNameHashes.Length);
-                        iMesh.BoneList = new List<ImportedBone>(boneMax);
-                        for (int i = 0; i < boneMax; i++)
-                        {
-                            var bone = new ImportedBone();
-                            var boneHash = mesh.m_BoneNameHashes[i];
-                            var path = GetPathFromHash(boneHash);
-                            bone.Path = FixBonePath(path);
-                            if (!string.IsNullOrEmpty(bone.Path))
-                            {
-                                var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
-                                bone.Matrix = convert * mesh.m_BindPose[i] * convert;
-                                iMesh.BoneList.Add(bone);
-                            }
-                        }
+                        var bone = new ImportedBone();
+                        var boneHash = mesh.m_BoneNameHashes[i];
+                        var path = GetPathFromHash(boneHash);
+                        bone.Path = FixBonePath(path);
+                        var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
+                        bone.Matrix = convert * mesh.m_BindPose[i] * convert;
+                        iMesh.BoneList.Add(bone);
                     }
                 }
 
@@ -435,7 +505,14 @@ namespace AssetStudio
                         var channel = new ImportedMorphChannel();
                         morph.Channels.Add(channel);
                         var shapeChannel = mesh.m_Shapes.channels[i];
-                        channel.Name = shapeChannel.name;
+
+                        var blendShapeName = "blendShape." + shapeChannel.name;
+                        var crc = new SevenZip.CRC();
+                        var bytes = Encoding.UTF8.GetBytes(blendShapeName);
+                        crc.Update(bytes, 0, (uint)bytes.Length);
+                        morphChannelNames[crc.GetDigest()] = blendShapeName;
+
+                        channel.Name = shapeChannel.name.Split('.').Last();
                         channel.KeyframeList = new List<ImportedMorphKeyframe>(shapeChannel.frameCount);
                         var frameEnd = shapeChannel.frameIndex + shapeChannel.frameCount;
                         for (int frameIdx = shapeChannel.frameIndex; frameIdx < frameEnd; frameIdx++)
@@ -454,10 +531,10 @@ namespace AssetStudio
                                 keyframe.VertexList.Add(destVertex);
                                 var morphVertex = mesh.m_Shapes.vertices[j];
                                 destVertex.Index = morphVertex.index;
-                                var sourceVertex = GetSourceVertex(iMesh.SubmeshList, (int)morphVertex.index);
+                                var sourceVertex = iMesh.VertexList[(int)morphVertex.index];
                                 destVertex.Vertex = new ImportedVertex();
                                 var morphPos = morphVertex.vertex;
-                                destVertex.Vertex.Position = sourceVertex.Position + new Vector3(-morphPos.X, morphPos.Y, morphPos.Z);
+                                destVertex.Vertex.Vertex = sourceVertex.Vertex + new Vector3(-morphPos.X, morphPos.Y, morphPos.Z);
                                 if (shape.hasNormals)
                                 {
                                     var morphNormal = morphVertex.normal;
@@ -519,11 +596,6 @@ namespace AssetStudio
             return null;
         }
 
-        private bool IsExistTransformPath(Transform transform)
-        {
-            return transformDictionary.ContainsKey(transform);
-        }
-
         private string GetTransformPath(Transform transform)
         {
             if (transformDictionary.TryGetValue(transform, out var frame))
@@ -531,6 +603,15 @@ namespace AssetStudio
                 return frame.Path;
             }
             return null;
+        }
+
+        private string FixBonePath(AnimationClip m_AnimationClip, string path)
+        {
+            if (boundAnimationPathDic.TryGetValue(m_AnimationClip, out var basePath))
+            {
+                path = basePath + "/" + path;
+            }
+            return FixBonePath(path);
         }
 
         private string FixBonePath(string path)
@@ -562,6 +643,14 @@ namespace AssetStudio
                 }
                 iMat = new ImportedMaterial();
                 iMat.Name = mat.m_Name;
+                //default values
+                iMat.Diffuse = new Color(0.8f, 0.8f, 0.8f, 1);
+                iMat.Ambient = new Color(0.2f, 0.2f, 0.2f, 1);
+                iMat.Emissive = new Color(0, 0, 0, 1);
+                iMat.Specular = new Color(0.2f, 0.2f, 0.2f, 1);
+                iMat.Reflection = new Color(0, 0, 0, 1);
+                iMat.Shininess = 20f;
+                iMat.Transparency = 0f;
                 foreach (var col in mat.m_SavedProperties.m_Colors)
                 {
                     switch (col.Key)
@@ -576,7 +665,6 @@ namespace AssetStudio
                             iMat.Emissive = col.Value;
                             break;
                         case "_SpecularColor":
-                        case "_SpecColor":
                             iMat.Specular = col.Value;
                             break;
                         case "_ReflectColor":
@@ -622,15 +710,16 @@ namespace AssetStudio
 
                     texture.Dest = dest;
 
+                    var ext = $".{imageFormat.ToString().ToLower()}";
                     if (textureNameDictionary.TryGetValue(m_Texture2D, out var textureName))
                     {
                         texture.Name = textureName;
                     }
-                    else if (ImportedHelpers.FindTexture(m_Texture2D.m_Name + ".png", TextureList) != null) //已有相同名字的图片
+                    else if (ImportedHelpers.FindTexture(m_Texture2D.m_Name + ext, TextureList) != null) //已有相同名字的图片
                     {
                         for (int i = 1; ; i++)
                         {
-                            var name = m_Texture2D.m_Name + $" ({i}).png";
+                            var name = m_Texture2D.m_Name + $" ({i}){ext}";
                             if (ImportedHelpers.FindTexture(name, TextureList) == null)
                             {
                                 texture.Name = name;
@@ -641,7 +730,7 @@ namespace AssetStudio
                     }
                     else
                     {
-                        texture.Name = m_Texture2D.m_Name + ".png";
+                        texture.Name = m_Texture2D.m_Name + ext;
                         textureNameDictionary.Add(m_Texture2D, texture.Name);
                     }
 
@@ -659,7 +748,7 @@ namespace AssetStudio
             return iMat;
         }
 
-        private void ConvertTexture2D(Texture2D tex2D, string name)
+        private void ConvertTexture2D(Texture2D m_Texture2D, string name)
         {
             var iTex = ImportedHelpers.FindTexture(name, TextureList);
             if (iTex != null)
@@ -667,15 +756,13 @@ namespace AssetStudio
                 return;
             }
 
-            var bitmap = new Texture2DConverter(tex2D).ConvertToBitmap(true);
-            if (bitmap != null)
+            var stream = m_Texture2D.ConvertToStream(imageFormat, true);
+            if (stream != null)
             {
-                using (var stream = new MemoryStream())
+                using (stream)
                 {
-                    bitmap.Save(stream, ImageFormat.Png);
                     iTex = new ImportedTexture(stream, name);
                     TextureList.Add(iTex);
-                    bitmap.Dispose();
                 }
             }
         }
@@ -699,13 +786,14 @@ namespace AssetStudio
                     }
                 }
                 iAnim.Name = name;
+                iAnim.SampleRate = animationClip.m_SampleRate;
                 iAnim.TrackList = new List<ImportedAnimationKeyframedTrack>();
                 AnimationList.Add(iAnim);
                 if (animationClip.m_Legacy)
                 {
                     foreach (var m_CompressedRotationCurve in animationClip.m_CompressedRotationCurves)
                     {
-                        var track = iAnim.FindTrack(FixBonePath(m_CompressedRotationCurve.m_Path));
+                        var track = iAnim.FindTrack(FixBonePath(animationClip, m_CompressedRotationCurve.m_Path));
 
                         var numKeys = m_CompressedRotationCurve.m_Times.m_NumItems;
                         var data = m_CompressedRotationCurve.m_Times.UnpackInts();
@@ -727,7 +815,7 @@ namespace AssetStudio
                     }
                     foreach (var m_RotationCurve in animationClip.m_RotationCurves)
                     {
-                        var track = iAnim.FindTrack(FixBonePath(m_RotationCurve.path));
+                        var track = iAnim.FindTrack(FixBonePath(animationClip, m_RotationCurve.path));
                         foreach (var m_Curve in m_RotationCurve.curve.m_Curve)
                         {
                             var value = Fbx.QuaternionToEuler(new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W));
@@ -736,7 +824,7 @@ namespace AssetStudio
                     }
                     foreach (var m_PositionCurve in animationClip.m_PositionCurves)
                     {
-                        var track = iAnim.FindTrack(FixBonePath(m_PositionCurve.path));
+                        var track = iAnim.FindTrack(FixBonePath(animationClip, m_PositionCurve.path));
                         foreach (var m_Curve in m_PositionCurve.curve.m_Curve)
                         {
                             track.Translations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(-m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
@@ -744,7 +832,7 @@ namespace AssetStudio
                     }
                     foreach (var m_ScaleCurve in animationClip.m_ScaleCurves)
                     {
-                        var track = iAnim.FindTrack(FixBonePath(m_ScaleCurve.path));
+                        var track = iAnim.FindTrack(FixBonePath(animationClip, m_ScaleCurve.path));
                         foreach (var m_Curve in m_ScaleCurve.curve.m_Curve)
                         {
                             track.Scalings.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
@@ -754,10 +842,35 @@ namespace AssetStudio
                     {
                         foreach (var m_EulerCurve in animationClip.m_EulerCurves)
                         {
-                            var track = iAnim.FindTrack(FixBonePath(m_EulerCurve.path));
+                            var track = iAnim.FindTrack(FixBonePath(animationClip, m_EulerCurve.path));
                             foreach (var m_Curve in m_EulerCurve.curve.m_Curve)
                             {
                                 track.Rotations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z)));
+                            }
+                        }
+                    }
+                    foreach (var m_FloatCurve in animationClip.m_FloatCurves)
+                    {
+                        if (m_FloatCurve.classID == ClassIDType.SkinnedMeshRenderer) //BlendShape
+                        {
+                            var channelName = m_FloatCurve.attribute;
+                            int dotPos = channelName.IndexOf('.');
+                            if (dotPos >= 0)
+                            {
+                                channelName = channelName.Substring(dotPos + 1);
+                            }
+
+                            var path = FixBonePath(animationClip, m_FloatCurve.path);
+                            if (string.IsNullOrEmpty(path))
+                            {
+                                path = GetPathByChannelName(channelName);
+                            }
+                            var track = iAnim.FindTrack(path);
+                            track.BlendShape = new ImportedBlendShape();
+                            track.BlendShape.ChannelName = channelName;
+                            foreach (var m_Curve in m_FloatCurve.curve.m_Curve)
+                            {
+                                track.BlendShape.Keyframes.Add(new ImportedKeyframe<float>(m_Curve.time, m_Curve.value));
                             }
                         }
                     }
@@ -766,7 +879,7 @@ namespace AssetStudio
                 {
                     var m_Clip = animationClip.m_MuscleClip.m_Clip;
                     var streamedFrames = m_Clip.m_StreamedClip.ReadData();
-                    var m_ClipBindingConstant = animationClip.m_ClipBindingConstant;
+                    var m_ClipBindingConstant = animationClip.m_ClipBindingConstant ?? m_Clip.ConvertValueArrayToGenericBinding();
                     for (int frameIndex = 1; frameIndex < streamedFrames.Count - 1; frameIndex++)
                     {
                         var frame = streamedFrames[frameIndex];
@@ -810,55 +923,79 @@ namespace AssetStudio
         private void ReadCurveData(ImportedKeyframedAnimation iAnim, AnimationClipBindingConstant m_ClipBindingConstant, int index, float time, float[] data, int offset, ref int curveIndex)
         {
             var binding = m_ClipBindingConstant.FindBinding(index);
-            if (binding.path == 0)
+            if (binding.typeID == ClassIDType.SkinnedMeshRenderer) //BlendShape
+            {
+                var channelName = GetChannelNameFromHash(binding.attribute);
+                if (string.IsNullOrEmpty(channelName))
+                {
+                    curveIndex++;
+                    return;
+                }
+                int dotPos = channelName.IndexOf('.');
+                if (dotPos >= 0)
+                {
+                    channelName = channelName.Substring(dotPos + 1);
+                }
+
+                var bPath = FixBonePath(GetPathFromHash(binding.path));
+                if (string.IsNullOrEmpty(bPath))
+                {
+                    bPath = GetPathByChannelName(channelName);
+                }
+                var bTrack = iAnim.FindTrack(bPath);
+                bTrack.BlendShape = new ImportedBlendShape();
+                bTrack.BlendShape.ChannelName = channelName;
+                bTrack.BlendShape.Keyframes.Add(new ImportedKeyframe<float>(time, data[curveIndex++ + offset]));
+            }
+            else if (binding.typeID == ClassIDType.Transform)
+            {
+                var path = FixBonePath(GetPathFromHash(binding.path));
+                var track = iAnim.FindTrack(path);
+
+                switch (binding.attribute)
+                {
+                    case 1:
+                        track.Translations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
+                        (
+                            -data[curveIndex++ + offset],
+                            data[curveIndex++ + offset],
+                            data[curveIndex++ + offset]
+                        )));
+                        break;
+                    case 2:
+                        var value = Fbx.QuaternionToEuler(new Quaternion
+                        (
+                            data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset],
+                            data[curveIndex++ + offset]
+                        ));
+                        track.Rotations.Add(new ImportedKeyframe<Vector3>(time, value));
+                        break;
+                    case 3:
+                        track.Scalings.Add(new ImportedKeyframe<Vector3>(time, new Vector3
+                        (
+                            data[curveIndex++ + offset],
+                            data[curveIndex++ + offset],
+                            data[curveIndex++ + offset]
+                        )));
+                        break;
+                    case 4:
+                        track.Rotations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
+                        (
+                            data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset]
+                        )));
+                        break;
+                    default:
+                        curveIndex++;
+                        break;
+                }
+            }
+            else
             {
                 curveIndex++;
-                return;
-            }
-
-            var path = FixBonePath(GetPathFromHash(binding.path));
-            var track = iAnim.FindTrack(path);
-
-            switch (binding.attribute)
-            {
-                case 1:
-                    track.Translations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
-                    (
-                        -data[curveIndex++ + offset],
-                        data[curveIndex++ + offset],
-                        data[curveIndex++ + offset]
-                    )));
-                    break;
-                case 2:
-                    var value = Fbx.QuaternionToEuler(new Quaternion
-                    (
-                        data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset],
-                        data[curveIndex++ + offset]
-                    ));
-                    track.Rotations.Add(new ImportedKeyframe<Vector3>(time, value));
-                    break;
-                case 3:
-                    track.Scalings.Add(new ImportedKeyframe<Vector3>(time, new Vector3
-                    (
-                        data[curveIndex++ + offset],
-                        data[curveIndex++ + offset],
-                        data[curveIndex++ + offset]
-                    )));
-                    break;
-                case 4:
-                    track.Rotations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
-                    (
-                        data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset]
-                    )));
-                    break;
-                default:
-                    //track.Curve.Add(new ImportedKeyframe<float>(time, data[curveIndex++]));
-                    curveIndex++;
-                    break;
             }
         }
 
@@ -874,42 +1011,6 @@ namespace AssetStudio
                 boneName = "unknown " + hash;
             }
             return boneName;
-        }
-
-        private static string BlendShapeNameGroup(Mesh mesh, int index)
-        {
-            string name = mesh.m_Shapes.channels[index].name;
-            int dotPos = name.IndexOf('.');
-            if (dotPos >= 0)
-            {
-                return name.Substring(0, dotPos);
-            }
-            return "Ungrouped";
-        }
-
-        private static string BlendShapeNameExtension(Mesh mesh, int index)
-        {
-            string name = mesh.m_Shapes.channels[index].name;
-            int dotPos = name.IndexOf('.');
-            if (dotPos >= 0)
-            {
-                return name.Substring(dotPos + 1);
-            }
-            return name;
-        }
-
-        private static ImportedVertex GetSourceVertex(List<ImportedSubmesh> submeshList, int morphVertIndex)
-        {
-            foreach (var submesh in submeshList)
-            {
-                var vertList = submesh.VertexList;
-                if (morphVertIndex < vertList.Count)
-                {
-                    return vertList[morphVertIndex];
-                }
-                morphVertIndex -= vertList.Count;
-            }
-            return null;
         }
 
         private void CreateBonePathHash(Transform m_Transform)
@@ -982,6 +1083,33 @@ namespace AssetStudio
                     frame = CreateFrame(transformName, xform.t, xform.q, xform.s);
                     parentFrame.AddChild(frame);
                 }
+            }
+        }
+
+        private string GetPathByChannelName(string channelName)
+        {
+            foreach (var morph in MorphList)
+            {
+                foreach (var channel in morph.Channels)
+                {
+                    if (channel.Name == channelName)
+                    {
+                        return morph.Path;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private string GetChannelNameFromHash(uint attribute)
+        {
+            if (morphChannelNames.TryGetValue(attribute, out var name))
+            {
+                return name;
+            }
+            else
+            {
+                return null;
             }
         }
     }

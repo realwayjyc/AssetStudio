@@ -1,21 +1,25 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace AssetStudio
 {
     public class StreamingInfo
     {
-        public uint offset;
+        public long offset; //ulong
         public uint size;
         public string path;
 
         public StreamingInfo(ObjectReader reader)
         {
-            offset = reader.ReadUInt32();
+            var version = reader.version;
+
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                offset = reader.ReadInt64();
+            }
+            else
+            {
+                offset = reader.ReadUInt32();
+            }
             size = reader.ReadUInt32();
             path = reader.ReadAlignedString();
         }
@@ -56,7 +60,7 @@ namespace AssetStudio
         public bool m_MipMap;
         public int m_MipCount;
         public GLTextureSettings m_TextureSettings;
-        public Lazy<byte[]> image_data;
+        public ResourceReader image_data;
         public StreamingInfo m_StreamData;
 
         public Texture2D(ObjectReader reader) : base(reader)
@@ -64,6 +68,10 @@ namespace AssetStudio
             m_Width = reader.ReadInt32();
             m_Height = reader.ReadInt32();
             var m_CompleteImageSize = reader.ReadInt32();
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                var m_MipsStripped = reader.ReadInt32();
+            }
             m_TextureFormat = (TextureFormat)reader.ReadInt32();
             if (version[0] < 5 || (version[0] == 5 && version[1] < 2)) //5.2 down
             {
@@ -73,9 +81,29 @@ namespace AssetStudio
             {
                 m_MipCount = reader.ReadInt32();
             }
-            var m_IsReadable = reader.ReadBoolean(); //2.6.0 and up
-            var m_ReadAllowed = reader.ReadBoolean(); //3.0.0 - 5.4
-            //bool m_StreamingMipmaps 2018.2 and up
+            if (version[0] > 2 || (version[0] == 2 && version[1] >= 6)) //2.6.0 and up
+            {
+                var m_IsReadable = reader.ReadBoolean();
+            }
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                var m_IsPreProcessed = reader.ReadBoolean();
+            }
+            if (version[0] > 2019 || (version[0] == 2019 && version[1] >= 3)) //2019.3 and up
+            {
+                var m_IgnoreMasterTextureLimit = reader.ReadBoolean();
+            }
+            if (version[0] >= 3) //3.0.0 - 5.4
+            {
+                if (version[0] < 5 || (version[0] == 5 && version[1] <= 4))
+                {
+                    var m_ReadAllowed = reader.ReadBoolean();
+                }
+            }
+            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
+            {
+                var m_StreamingMipmaps = reader.ReadBoolean();
+            }
             reader.AlignStream();
             if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
             {
@@ -92,6 +120,11 @@ namespace AssetStudio
             {
                 var m_ColorSpace = reader.ReadInt32();
             }
+            if (version[0] > 2020 || (version[0] == 2020 && version[1] >= 2)) //2020.2 and up
+            {
+                var m_PlatformBlob = reader.ReadUInt8Array();
+                reader.AlignStream();
+            }
             var image_data_size = reader.ReadInt32();
             if (image_data_size == 0 && ((version[0] == 5 && version[1] >= 3) || version[0] > 5))//5.3.0 and up
             {
@@ -101,13 +134,13 @@ namespace AssetStudio
             ResourceReader resourceReader;
             if (!string.IsNullOrEmpty(m_StreamData?.path))
             {
-                resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, (int)m_StreamData.size);
+                resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, m_StreamData.size);
             }
             else
             {
                 resourceReader = new ResourceReader(reader, reader.BaseStream.Position, image_data_size);
             }
-            image_data = new Lazy<byte[]>(resourceReader.GetData);
+            image_data = resourceReader;
         }
     }
 
@@ -121,7 +154,8 @@ namespace AssetStudio
         RGB565 = 7,
         R16 = 9,
         DXT1,
-        DXT5 = 12,
+        DXT3,
+        DXT5,
         RGBA4444,
         BGRA32,
         RHalf,
@@ -132,11 +166,11 @@ namespace AssetStudio
         RGBAFloat,
         YUY2,
         RGB9e5Float,
-        BC4 = 26,
-        BC5,
         BC6H = 24,
         BC7,
-        DXT1Crunched = 28,
+        BC4,
+        BC5,
+        DXT1Crunched,
         DXT5Crunched,
         PVRTC_RGB2,
         PVRTC_RGBA2,
@@ -170,5 +204,14 @@ namespace AssetStudio
         R8,
         ETC_RGB4Crunched,
         ETC2_RGBA8Crunched,
+        ASTC_HDR_4x4,
+        ASTC_HDR_5x5,
+        ASTC_HDR_6x6,
+        ASTC_HDR_8x8,
+        ASTC_HDR_10x10,
+        ASTC_HDR_12x12,
+        RG32,
+        RGB48,
+        RGBA64
     }
 }
