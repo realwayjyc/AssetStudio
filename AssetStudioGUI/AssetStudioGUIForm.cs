@@ -198,6 +198,22 @@ namespace AssetStudioGUI
             }
         }
 
+        private void SortTreeNodeByName(List<TreeNode> treeNodes)
+        {
+            treeNodes.Sort((x, y) => x.Text.CompareTo(y.Text));
+            foreach(TreeNode node in treeNodes)
+            {
+                List<TreeNode> temp = new List<TreeNode>();
+                foreach(TreeNode node2 in node.Nodes)
+                {
+                    temp.Add(node2);
+                }
+                SortTreeNodeByName(temp);
+                node.Nodes.Clear();
+                node.Nodes.AddRange(temp.ToArray());
+            }
+        }
+
         private async void BuildAssetStructures()
         {
             if (assetsManager.assetsFileList.Count == 0)
@@ -220,6 +236,7 @@ namespace AssetStudioGUI
 
             assetListView.VirtualListSize = visibleAssets.Count;
 
+            SortTreeNodeByName(treeNodeCollection);
             sceneTreeView.BeginUpdate();
             sceneTreeView.Nodes.AddRange(treeNodeCollection.ToArray());
             sceneTreeView.EndUpdate();
