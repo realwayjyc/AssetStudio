@@ -851,7 +851,7 @@ namespace AssetStudio
                     }
                     foreach (var m_FloatCurve in animationClip.m_FloatCurves)
                     {
-                        if (m_FloatCurve.classID == ClassIDType.SkinnedMeshRenderer) //BlendShape
+                        if (m_FloatCurve.classID == (int)ClassIDType.SkinnedMeshRenderer) //BlendShape
                         {
                             var channelName = m_FloatCurve.attribute;
                             int dotPos = channelName.IndexOf('.');
