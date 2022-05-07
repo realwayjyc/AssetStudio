@@ -7,6 +7,7 @@ namespace AssetStudio
 {
     public class ModelConverter : IImported
     {
+        public static bool CanLoadAnimation = true;
         public ImportedFrame RootFrame { get; protected set; }
         public List<ImportedMesh> MeshList { get; protected set; } = new List<ImportedMesh>();
         public List<ImportedMaterial> MaterialList { get; protected set; } = new List<ImportedMaterial>();
@@ -26,7 +27,7 @@ namespace AssetStudio
         public ModelConverter(GameObject m_GameObject, ImageFormat imageFormat, AnimationClip[] animationList = null)
         {
             this.imageFormat = imageFormat;
-            if (m_GameObject.m_Animator != null)
+            if (m_GameObject.m_Animator != null && CanLoadAnimation)
             {
                 InitWithAnimator(m_GameObject.m_Animator);
                 if (animationList == null)

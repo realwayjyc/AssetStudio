@@ -1328,6 +1328,15 @@ namespace AssetStudioGUI
 
         private void exportSelectedObjectsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if(MessageBox.Show("是否需要读取Animation?如果是，则在ModelConverter构造函数中会读取相应的Animation。\n 该程序的逻辑是即使没选择任何Animation，但是也会从导出的对象中查找Animation并导出。", 
+                "", MessageBoxButtons.OKCancel)==DialogResult.OK)
+            {
+                ModelConverter.CanLoadAnimation = true;
+            }
+            else
+            {
+                ModelConverter.CanLoadAnimation = false;
+            }
             ExportObjects(false);
         }
 
