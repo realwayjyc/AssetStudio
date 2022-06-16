@@ -728,42 +728,50 @@ namespace UnityAnalyzer
 
         public StateMachineConstant(ObjectInfo objectInfo, byte[] content, int objectOffset, ref int index)
         {
-            var version = objectInfo.UnityFileVersion;
-
-            int numStates = BitConverter.ToInt32(content, index);
-            index += 4;
-
-            m_StateConstantArray = new StateConstant[numStates];
-            for (int i = 0; i < numStates; i++)
+            try
             {
-                m_StateConstantArray[i] = new StateConstant(objectInfo, content, objectOffset, ref index);
-            }
+                var version = objectInfo.UnityFileVersion;
 
-            int numAnyStates = BitConverter.ToInt32(content, index);
-            index += 4;
-
-            m_AnyStateTransitionConstantArray = new TransitionConstant[numAnyStates];
-            for (int i = 0; i < numAnyStates; i++)
-            {
-                m_AnyStateTransitionConstantArray[i] = new TransitionConstant(objectInfo, content, objectOffset, ref index);
-            }
-
-            if (version[0] >= 5) //5.0 and up
-            {
-                int numSelectors = BitConverter.ToInt32(content, index);
+                int numStates = BitConverter.ToInt32(content, index);
                 index += 4;
-                m_SelectorStateConstantArray = new SelectorStateConstant[numSelectors];
-                for (int i = 0; i < numSelectors; i++)
+
+                m_StateConstantArray = new StateConstant[numStates];
+                for (int i = 0; i < numStates; i++)
                 {
-                    m_SelectorStateConstantArray[i] = new SelectorStateConstant(objectInfo, content, objectOffset, ref index);
+                    m_StateConstantArray[i] = new StateConstant(objectInfo, content, objectOffset, ref index);
                 }
+
+                int numAnyStates = BitConverter.ToInt32(content, index);
+                index += 4;
+
+                m_AnyStateTransitionConstantArray = new TransitionConstant[numAnyStates];
+                for (int i = 0; i < numAnyStates; i++)
+                {
+                    m_AnyStateTransitionConstantArray[i] = new TransitionConstant(objectInfo, content, objectOffset, ref index);
+                }
+
+                if (version[0] >= 5) //5.0 and up
+                {
+                    int numSelectors = BitConverter.ToInt32(content, index);
+                    index += 4;
+                    m_SelectorStateConstantArray = new SelectorStateConstant[numSelectors];
+                    for (int i = 0; i < numSelectors; i++)
+                    {
+                        m_SelectorStateConstantArray[i] = new SelectorStateConstant(objectInfo, content, objectOffset, ref index);
+                    }
+                }
+
+                m_DefaultState = BitConverter.ToUInt32(content, index);
+                index += 4;
+
+                m_MotionSetCount = BitConverter.ToUInt32(content, index);
+                index += 4;
             }
-
-            m_DefaultState = BitConverter.ToUInt32(content, index);
-            index += 4;
-
-            m_MotionSetCount = BitConverter.ToUInt32(content, index);
-            index += 4;
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            
         }
     }
 
@@ -1001,28 +1009,36 @@ namespace UnityAnalyzer
             int controllerSize= BitConverter.ToInt32(content, index);
             index += 4;
 
-            ret.ControllerConstant = new ControllerConstant(objectInfo, content, objectOffset, ref index);
-
-            int tosSize = BitConverter.ToInt32(content, index);
-            index += 4;
-
-            ret.TOS = new KeyValuePair<uint, string>[tosSize];
-            for (int i = 0; i < tosSize; i++)
+            try
             {
-                uint v= BitConverter.ToUInt32(content, index);
+                ret.ControllerConstant = new ControllerConstant(objectInfo, content, objectOffset, ref index);
+
+                int tosSize = BitConverter.ToInt32(content, index);
                 index += 4;
 
-                string s = Util.readStringAndAlign(content, objectOffset, ref index);
-                ret.TOS[i] = new KeyValuePair<uint, string>(v, s);
-            }
+                ret.TOS = new KeyValuePair<uint, string>[tosSize];
+                for (int i = 0; i < tosSize; i++)
+                {
+                    uint v = BitConverter.ToUInt32(content, index);
+                    index += 4;
 
-            int numClips = BitConverter.ToInt32(content, index);
-            index += 4;
-            ret.AnimationClips = new List<SerializedObjectIdentifier>();
-            for (int i = 0; i < numClips; i++)
-            {
-                ret.AnimationClips.Add(Util.ReadNextSerializedObjectIdentifier(content, ref index, objectInfo));
+                    string s = Util.readStringAndAlign(content, objectOffset, ref index);
+                    ret.TOS[i] = new KeyValuePair<uint, string>(v, s);
+                }
+
+                int numClips = BitConverter.ToInt32(content, index);
+                index += 4;
+                ret.AnimationClips = new List<SerializedObjectIdentifier>();
+                for (int i = 0; i < numClips; i++)
+                {
+                    ret.AnimationClips.Add(Util.ReadNextSerializedObjectIdentifier(content, ref index, objectInfo));
+                }
             }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            
 
             return ret;
         }
