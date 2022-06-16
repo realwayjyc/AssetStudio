@@ -90,16 +90,28 @@ namespace UnityAnalyzer
 
         public static PlayerSettings Create(ObjectInfo objectInfo, byte[] content, int objectOffset)
         {
-            if (!(objectInfo.UnityFileVersion[0] == 4 && objectInfo.UnityFileVersion[1] == 6))
+            if (!(objectInfo.UnityFileVersion[0] == 4 && objectInfo.UnityFileVersion[1] == 6)
+                && !(objectInfo.UnityFileVersion[0] == 5 && objectInfo.UnityFileVersion[1] == 3))
             {
                 //暂时不解析
                 return null;
             }
-            PlayerSettings ret = new PlayerSettings();
+          
             int index = objectOffset + objectInfo.ByteStart;
+            PlayerSettings ret = new PlayerSettings();
+            //if ((objectInfo.UnityFileVersion[0] == 5))
+            //{
+
+            //  ret.activeColorSpace = BitConverter.ToInt32(content, index + 0x80);
+            //    ret.renderingPath = (RENDERING_PATH)BitConverter.ToInt32(content, index + 0x80 - 8);
+            //    return ret;
+            //}
             int initIndex = index;
-            ret.androidProfiler = (content[index++] == 1);
-            index += Util.GetAlignCount(index, objectOffset);
+            if ((objectInfo.UnityFileVersion[0] != 5))
+            {
+                ret.androidProfiler = (content[index++] == 1);
+                index += Util.GetAlignCount(index, objectOffset);
+            }
 
             ret.defaultScreenOrientation = BitConverter.ToInt32(content, index);
             index += 4;
@@ -139,6 +151,11 @@ namespace UnityAnalyzer
 
             ret.companyName = Util.readStringAndAlign(content, objectOffset, ref index);
             ret.productName = Util.readStringAndAlign(content, objectOffset, ref index);
+            if ((objectInfo.UnityFileVersion[0] == 5))
+            {
+                ret.androidProfiler = (content[index++] == 1);
+                index += Util.GetAlignCount(index, objectOffset);
+            }
 
             int serializedFileIndex = BitConverter.ToInt32(content, index);
             index += 4;
@@ -166,6 +183,10 @@ namespace UnityAnalyzer
             ret.defaultWebScreenHeight = BitConverter.ToInt32(content, index);
             index += 4;
 
+            if ((objectInfo.UnityFileVersion[0] == 5))
+            {
+                index += 0x10;
+            }
             ret.renderingPath = (RENDERING_PATH)BitConverter.ToInt32(content, index);
             index += 4;
 
@@ -174,6 +195,10 @@ namespace UnityAnalyzer
 
             ret.activeColorSpace = BitConverter.ToInt32(content, index);
             index += 4;
+            if ((objectInfo.UnityFileVersion[0] == 5))
+            {
+                return ret;
+            }
 
             ret.mtRendering = (1==content[index++]);
             ret.mobileMTRendering = (1 == content[index++]);
@@ -272,7 +297,7 @@ namespace UnityAnalyzer
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
                     {
-                        GeneralObjectPanel panel = new GeneralObjectPanel();
+                        PlayerSettingPanel panel = new PlayerSettingPanel();
                         objectInfoPanel = panel;
                         panel.SetUnityObject(this);
                     });

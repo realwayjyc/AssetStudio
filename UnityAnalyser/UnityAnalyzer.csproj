@@ -163,6 +163,9 @@
     <Compile Include="ObjectPanel\ParticleRendererPanel.xaml.cs">
       <DependentUpon>ParticleRendererPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ObjectPanel\PlayerSettingPanel.xaml.cs">
+      <DependentUpon>PlayerSettingPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ObjectPanel\RectTransformPanel.xaml.cs">
       <DependentUpon>RectTransformPanel.xaml</DependentUpon>
     </Compile>
@@ -399,6 +402,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ObjectPanel\ParticleRendererPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ObjectPanel\PlayerSettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

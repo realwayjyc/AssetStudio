@@ -219,6 +219,10 @@ namespace UnityAnalyzer
             int index = 0;
 
             index = objectOffset + objectInfo.ByteStart + 8;
+            if ((objectInfo.UnityFileVersion[0] == 5))
+            {
+                index += 4;
+            }
             ret.isEnabled = (content[index++] == 1);
 
             index += Util.GetAlignCount(index, objectOffset);
@@ -226,8 +230,8 @@ namespace UnityAnalyzer
 
             ret.lightType = (LIGHT_TYPE)BitConverter.ToInt32(content, index);
             index += 4;
-
-                float colorR=BitConverter.ToSingle(content, index);
+           
+            float colorR=BitConverter.ToSingle(content, index);
             index += 4;
 
             float colorG = BitConverter.ToSingle(content, index);
