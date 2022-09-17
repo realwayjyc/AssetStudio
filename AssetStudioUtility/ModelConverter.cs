@@ -55,7 +55,7 @@ namespace AssetStudio
             RootFrame = CreateFrame(rootName, Vector3.Zero, new Quaternion(0, 0, 0, 0), Vector3.One);
             foreach (var m_GameObject in m_GameObjects)
             {
-                if (m_GameObject.m_Animator != null && animationList == null)
+                if (m_GameObject.m_Animator != null && animationList == null && CanLoadAnimation)
                 {
                     CollectAnimationClip(m_GameObject.m_Animator);
                 }
