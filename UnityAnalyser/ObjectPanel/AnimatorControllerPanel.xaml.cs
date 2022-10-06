@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static UnityAnalyzer.AnimatorController;
 
 namespace UnityAnalyzer
 {
@@ -44,6 +45,8 @@ namespace UnityAnalyzer
     public partial class AnimatorControllerPanel : UserControl
     {
         private AnimatorController animatorController;
+        List<AnimationClip> animationClips1;
+        List<AnimatorController.AnimControllerLayer> layers;
 
         public AnimatorControllerPanel()
         {
@@ -52,21 +55,17 @@ namespace UnityAnalyzer
 
         public void SetUnityObject(AnimatorController animatorController)
         {
-            //this.animatorController = animatorController;
-            //this.txtAnimatorControllerName.Text = animatorController.AnimatorControllerName;
+            this.animatorController = animatorController;
+            this.txtAnimatorControllerName.Text = animatorController.AnimatorControllerName;
 
-            //List<AnimatorControllerLayer> layerList = animatorController.layerList;
-            //List<TreeNode> treeNodeList = new List<TreeNode>();
-            //foreach(AnimatorControllerLayer layer in layerList)
-            //{
-            //    TreeNode t = new TreeNode();
-            //    t.Name = layer.name;
-            //    t.DisplayName = layer.name;
-            //    t.objectContext = layer;
-            //    t.id = (int)layer.layerNameMapKey;
-            //    treeNodeList.Add(t);
-            //}
-            //this.tvLayers.ItemsSource = treeNodeList;
+            layers = animatorController.Layers;
+            foreach (var layer in layers)
+            {
+                this.LayerView.Items.Add(layer.LayerName);
+            }
+            
+
+
 
             //////////////////////////////////////////////////////////////////////////////////
             //List<AnimatorControllerState> stateList = animatorController.stateList;
@@ -96,12 +95,25 @@ namespace UnityAnalyzer
             //}
             //this.tvVariables.ItemsSource = treeNodeList;
 
+            //////////////////////////////////////////////////////////////////////////////////
+            List<SerializedObjectIdentifier> animationClips = animatorController.AnimationClips;
+            animationClips1 = new List<AnimationClip>();
+            foreach (SerializedObjectIdentifier param in animationClips)
+            {
+               AnimationClip animationClip=  animatorController.
+                    GetUnityObjectBySerializedObjectIdentifier(param) as AnimationClip;
+                if(animationClip != null)
+                {
+                    animationClips1.Add(animationClip);
+                }
+            }
+            foreach(AnimationClip animationClip in animationClips1)
+            {
+                animationsListView.Items.Add(animationClip.Name);
+            }
         }
 
-        private void tvLayers_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            TreeNode treeNode = this.tvLayers.SelectedItem as TreeNode;
-        }
+
 
         private void TvMouseRightDown(object sender, MouseButtonEventArgs e)
         {
@@ -185,6 +197,72 @@ namespace UnityAnalyzer
 
             //this.generalObjectPanelParam.dgUnityObjectField.ItemsSource = fieldValueClsList;
 
+        }
+
+        private void Button_Click_Open(object sender, RoutedEventArgs e)
+        {
+            if (btnOpen.DataContext as UnityObject != null)
+            {
+                MainWindow.instance.ShowUnityObject(btnOpen.DataContext as UnityObject);
+            }
+        }
+
+        private void animationsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int index = animationsListView.SelectedIndex;
+            if(index>=0 && index< animationClips1.Count)
+            {
+                btnOpen.DataContext = this.animationClips1[index];
+            }
+        }
+
+        private void LayerView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(LayerView.SelectedIndex>=0 && LayerView.SelectedIndex< layers.Count)
+            {
+                AnimatorController.AnimControllerLayer layer = layers[LayerView.SelectedIndex];
+                this.txtWeight.Text = layer.DefaultWeight.ToString("0.0000");
+                this.txtIKPass.Text = layer.IKPass.ToString();
+                this.txtBlend.Text = layer.BlendMode.ToString();
+                //No Pos Mask
+                txtHumanPos.Text = (layer.humanPoseMask.word0 == 0xffffffff &&
+                    layer.humanPoseMask.word1 == 0x07ffffff).ToString();
+                int totalMask = layer.SkeletonMask.m_Data.Length;
+                int weightCount = 0;
+                if(totalMask==0)
+                {
+                    txtSkeletonMask.Text = "";
+                }
+                else
+                {
+                    foreach(var mask in layer.SkeletonMask.m_Data)
+                    {
+                        if(mask.m_Weight!=0)
+                        {
+                            weightCount++;
+                        }
+                    }
+                    txtSkeletonMask.Text = weightCount.ToString() + "/" + totalMask.ToString();
+                }
+                StateView.DataContext = layer.states;
+                StateView.Items.Clear();
+                foreach (var state in layer.states)
+                {
+                    StateView.Items.Add(state.Name);
+                }
+            }
+        }
+
+        private void StateView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            List<State> states = StateView.DataContext as List<State>;
+            int index = StateView.SelectedIndex;
+            if(index>=0 && index<states.Count)
+            {
+                State state = states[index];
+                txtStatePath.Text = state.Path;
+                txtStateAnimationName.Text = state.animationClipName;
+            }
         }
     }
 }

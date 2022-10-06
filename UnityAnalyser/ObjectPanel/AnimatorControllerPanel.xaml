@@ -29,53 +29,59 @@
             <TabItem Header="Layers">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="61.8"/>
-                        <ColumnDefinition Width="138.2"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="150"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TreeView MouseRightButtonDown="TvMouseRightDown"  x:Name="tvLayers"  SelectedItemChanged="tvLayers_SelectedItemChanged" Grid.ColumnSpan="2" Margin="0,0,0,0.4">
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="{x:Type TreeViewItem}">
-                                <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
-                            </Style>
-                        </TreeView.ItemContainerStyle>
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate  ItemsSource="{Binding Children}">
-                                <StackPanel Orientation="Horizontal" Height="20">
-                                    <StackPanel.ToolTip>
-                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="200"  />
-                                    </StackPanel.ToolTip>
-                                    <TextBlock VerticalAlignment="Center" x:Name="nodeName" Text="{Binding DisplayName}" Foreground="{Binding ItemColor}"/>
-                                </StackPanel>
-                            </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
-                    </TreeView>
-                </Grid>
-            </TabItem>
-            <TabItem Header="States">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TreeView MouseRightButtonDown="TvMouseRightDown"  x:Name="tvStates"  SelectedItemChanged="tvStates_SelectedItemChanged" Grid.ColumnSpan="2" Margin="0,0,0,0.4">
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="{x:Type TreeViewItem}">
-                                <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
-                            </Style>
-                        </TreeView.ItemContainerStyle>
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate  ItemsSource="{Binding Children}">
-                                <StackPanel Orientation="Horizontal" Height="20">
-                                    <StackPanel.ToolTip>
-                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="200"  />
-                                    </StackPanel.ToolTip>
-                                    <TextBlock VerticalAlignment="Center" x:Name="nodeName" Text="{Binding DisplayName}" Foreground="{Binding ItemColor}"/>
-                                </StackPanel>
-                            </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
-                    </TreeView>
-                    <local:GeneralObjectPanel x:Name="generalObjectPanel" Grid.Column="1"/>
+                    <ListView x:Name="LayerView" SelectionChanged="LayerView_SelectionChanged"/>
+                    <Grid Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                        </Grid.RowDefinitions>
+                        <Label Content="Weight" Grid.Column="0"/>
+                        <TextBox x:Name="txtWeight" Grid.Column="1"/>
+                        <Label Content="IK Pass" Grid.Column="0" Grid.Row="1"/>
+                        <TextBox x:Name="txtIKPass" Grid.Column="1"  Grid.Row="1"/>
+                        <Label Content="Blend" Grid.Column="0" Grid.Row="2"/>
+                        <TextBox x:Name="txtBlend" Grid.Column="1"  Grid.Row="2"/>
+                        <Label Content="HumamPos" Grid.Column="0" Grid.Row="3"/>
+                        <TextBox x:Name="txtHumanPos" Grid.Column="1"  Grid.Row="3"/>
+                        <Label Content="Path Mask Count" Grid.Column="0" Grid.Row="4"/>
+                        <TextBox x:Name="txtSkeletonMask" Grid.Column="1"  Grid.Row="4"/>
+                    </Grid>
+                    <Grid Grid.Column="2">
+                        <ListView x:Name="StateView" SelectionChanged="StateView_SelectionChanged"/>
+                    </Grid>
+                    <Grid Grid.Column="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                        </Grid.RowDefinitions>
+                        <Label Content="State Path:" Grid.Column="0"/>
+                        <TextBox x:Name="txtStatePath" Grid.Column="1"/>
+                        <Label Content="Animation:" Grid.Row="1" Grid.Column="0"/>
+                        <TextBox x:Name="txtStateAnimationName" Grid.Row="1" Grid.Column="1"/>
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="Variables">
@@ -102,6 +108,24 @@
                         </TreeView.ItemTemplate>
                     </TreeView>
                     <local:GeneralObjectPanel x:Name="generalObjectPanelParam" Grid.Column="1"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Animations">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="21.617"/>
+                        <ColumnDefinition Width="178.383"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <ListView x:Name="animationsListView" Grid.RowSpan="2" SelectionChanged="animationsListView_SelectionChanged" Grid.ColumnSpan="2">
+
+                    </ListView>
+                    <Button Name="btnOpen" Grid.Row="0" Grid.Column="3" Content="Open Object" Width="100" Height="25" HorizontalAlignment="Left" Click="Button_Click_Open" Margin="0,2,0,2"/>
                 </Grid>
             </TabItem>
         </TabControl>

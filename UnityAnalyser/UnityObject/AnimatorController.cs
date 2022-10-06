@@ -971,6 +971,33 @@ namespace UnityAnalyzer
 
     public class AnimatorController : UnityObject
     {
+        public enum BlendMode
+        {
+            Override=0,
+            Additive=1,
+        }
+
+        public class State
+        {
+            public string Name;
+            public string Path;
+            public string animationClipName;
+        }
+
+
+        public class AnimControllerLayer
+        {
+            public bool IKPass;
+            public float DefaultWeight;
+            public string LayerName;
+            public BlendMode BlendMode;
+            public HumanPoseMask humanPoseMask;
+            public SkeletonMask SkeletonMask;
+            public List<State> states;
+        }
+
+        public List<AnimControllerLayer> Layers;
+
         private string animatorControllerName;
         public string AnimatorControllerName
         {
@@ -1025,6 +1052,11 @@ namespace UnityAnalyzer
                     string s = Util.readStringAndAlign(content, objectOffset, ref index);
                     ret.TOS[i] = new KeyValuePair<uint, string>(v, s);
                 }
+                Dictionary<uint, string> nameDict = new Dictionary<uint, string>();
+                foreach(KeyValuePair<uint, string> pair in ret.TOS)
+                {
+                    nameDict.Add(pair.Key, pair.Value);
+                }
 
                 int numClips = BitConverter.ToInt32(content, index);
                 index += 4;
@@ -1032,6 +1064,36 @@ namespace UnityAnalyzer
                 for (int i = 0; i < numClips; i++)
                 {
                     ret.AnimationClips.Add(Util.ReadNextSerializedObjectIdentifier(content, ref index, objectInfo));
+                }
+                ret.Layers = new List<AnimControllerLayer>();
+                for(int i=0;i < ret.ControllerConstant.m_LayerArray.Length;i++)
+                {
+                    var layerConstant = ret.ControllerConstant.m_LayerArray[i];
+                    AnimControllerLayer layer = new AnimControllerLayer();
+                    layer.IKPass = layerConstant.m_IKPass;
+                    layer.DefaultWeight = layerConstant.m_DefaultWeight;
+                    layer.LayerName = nameDict[layerConstant.m_Binding];
+                    layer.BlendMode =(BlendMode)layerConstant.m_LayerBlendingMode;
+                    layer.humanPoseMask = layerConstant.m_BodyMask;
+                    layer.SkeletonMask=layerConstant.m_SkeletonMask;
+                    layer.states = new List<State>();
+                    var layerState = ret.ControllerConstant.m_StateMachineArray[i];
+                    foreach(var stateConstant in layerState.m_StateConstantArray)
+                    {
+                        State state = new State();
+                        state.Name = nameDict[stateConstant.m_NameID];
+                        state.Path = nameDict[stateConstant.m_PathID];
+                        try
+                        {
+                            state.animationClipName = nameDict[stateConstant.m_LeafInfoArray[0].m_IDArray[0]];
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        layer.states.Add(state);
+                    }
+                    ret.Layers.Add(layer);
                 }
             }
             catch(Exception ex)
