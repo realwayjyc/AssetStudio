@@ -982,6 +982,12 @@ namespace UnityAnalyzer
             public string Name;
             public string Path;
             public string animationClipName;
+            public float speed;
+            public float CycleOffset;
+            public bool FootIK;
+            public bool Loop;
+            public bool Mirror;
+            public bool WriteDefault;
         }
 
 
@@ -1065,6 +1071,10 @@ namespace UnityAnalyzer
                 {
                     ret.AnimationClips.Add(Util.ReadNextSerializedObjectIdentifier(content, ref index, objectInfo));
                 }
+                if(ret.animatorControllerName=="BODY_F")
+                {
+                    Console.WriteLine("A");
+                }
                 ret.Layers = new List<AnimControllerLayer>();
                 for(int i=0;i < ret.ControllerConstant.m_LayerArray.Length;i++)
                 {
@@ -1083,6 +1093,11 @@ namespace UnityAnalyzer
                         State state = new State();
                         state.Name = nameDict[stateConstant.m_NameID];
                         state.Path = nameDict[stateConstant.m_PathID];
+                        state.speed = stateConstant.m_Speed;
+                        state.CycleOffset=stateConstant.m_CycleOffset;
+                        state.Mirror=stateConstant.m_Mirror;
+                        state.FootIK = stateConstant.m_IKOnFeet;
+                        state.WriteDefault = stateConstant.m_WriteDefaultValues;
                         try
                         {
                             state.animationClipName = nameDict[stateConstant.m_LeafInfoArray[0].m_IDArray[0]];
@@ -1100,8 +1115,6 @@ namespace UnityAnalyzer
             {
                 Console.WriteLine(ex.Message);
             }
-            
-
             return ret;
         }
     }

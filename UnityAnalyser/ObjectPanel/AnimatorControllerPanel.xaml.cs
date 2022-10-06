@@ -235,13 +235,22 @@ namespace UnityAnalyzer
                 }
                 else
                 {
-                    foreach(var mask in layer.SkeletonMask.m_Data)
+                    MaskName.Items.Clear();
+                    string copiedContent = "";
+                    int index = 0;
+                    foreach (var mask in layer.SkeletonMask.m_Data)
                     {
                         if(mask.m_Weight!=0)
                         {
                             weightCount++;
+                            string content=StringHashLoader.GetStringByHash(mask.m_PathHash);
+                            copiedContent += content + "\n";
+                            string[] fs = content.Split('/');
+                            MaskName.Items.Add(index+": 0x" +mask.m_PathHash.ToString("X")+":"+fs[fs.Length - 1]);
                         }
+                        index++;
                     }
+                    MaskName.DataContext= copiedContent;
                     txtSkeletonMask.Text = weightCount.ToString() + "/" + totalMask.ToString();
                 }
                 StateView.DataContext = layer.states;
@@ -262,7 +271,24 @@ namespace UnityAnalyzer
                 State state = states[index];
                 txtStatePath.Text = state.Path;
                 txtStateAnimationName.Text = state.animationClipName;
+                txtStateSpeed.Text = state.speed.ToString();
+                txtCycleOffset.Text=state.CycleOffset.ToString();
+                txtMirror.Text=state.Mirror.ToString();
+                txtFootIK.Text= state.FootIK.ToString();
+                txtWriteDefault.Text=state.WriteDefault.ToString();
             }
+        }
+
+        private void MaskName_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            string content = MaskName.DataContext as string;
+            Clipboard.SetText(content);
+            MessageBox.Show("Copied");
         }
     }
 }

@@ -15,6 +15,7 @@ namespace UnityAnalyzer
     {
         public App()
         {
+            StringHashLoader.LoadHash();
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             try
             {

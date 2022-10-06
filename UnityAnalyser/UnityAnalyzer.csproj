@@ -88,6 +88,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Analyser.cs" />
+    <Compile Include="CRC.cs" />
     <Compile Include="DgObjectItem.cs" />
     <Compile Include="GameObjectDatagrid.xaml.cs">
       <DependentUpon>GameObjectDatagrid.xaml</DependentUpon>
@@ -213,6 +214,7 @@
     <Compile Include="ScriptFields\ToggleSFVS.cs" />
     <Compile Include="ScriptFields\TouchInputModuleSFVS.cs" />
     <Compile Include="ScriptFields\VerticalLayoutGroupSFVS.cs" />
+    <Compile Include="StringHashLoader.cs" />
     <Compile Include="UnityObject\AnimationClip.cs" />
     <Compile Include="UnityObject\Animator.cs" />
     <Compile Include="UnityObject\AnimatorController.cs" />
