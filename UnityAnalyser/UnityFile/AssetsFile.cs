@@ -269,7 +269,7 @@ namespace UnityAnalyzer
                 int index = -1;
                 GameObject parent = gameObject.GetParentGameObject(ref index);
 
-                if (parent != null)
+                if (parent != null && index!=-1)
                 {
                     GameObjectNode parentGameObjectNode = gameObjDict[parent.Id];
                     if (index >= parentGameObjectNode.Children.Count)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Controls;
 
 namespace UnityAnalyzer
@@ -449,6 +450,7 @@ namespace UnityAnalyzer
                         break;
                     default:
                         ret = new UnityObject();
+                        Debug.WriteLine(objectInfo.ClassIDType);
                         break;
                 }
             }
