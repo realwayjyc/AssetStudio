@@ -244,9 +244,9 @@ namespace UnityAnalyzer
                         {
                             weightCount++;
                             string content=StringHashLoader.GetStringByHash(mask.m_PathHash);
-                            copiedContent += content + "\n";
                             string[] fs = content.Split('/');
                             MaskName.Items.Add(index+": 0x" +mask.m_PathHash.ToString("X")+":"+fs[fs.Length - 1]);
+                            copiedContent += fs[fs.Length - 1] + "\n";
                         }
                         index++;
                     }
