@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static UnityAnalyzer.AnimatorController;
+using System.IO;
 
 namespace UnityAnalyzer
 {
@@ -289,6 +290,40 @@ namespace UnityAnalyzer
             string content = MaskName.DataContext as string;
             Clipboard.SetText(content);
             MessageBox.Show("Copied");
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Output_Click(object sender, RoutedEventArgs e)
+        {
+            string content = "";
+            foreach(var layer in layers)
+            {
+                int totalMask = layer.SkeletonMask.m_Data.Length;
+                if(totalMask==0)
+                {
+                    continue;
+                }
+                content += layer.LayerName+"\n";
+
+                string temp = "";
+                int count = 0;
+                foreach (var mask in layer.SkeletonMask.m_Data)
+                {
+                    if (mask.m_Weight != 0)
+                    {
+                        count++;
+                        temp += StringHashLoader.GetStringByHash(mask.m_PathHash)+"\n";
+                    }
+                }
+
+                content += count + "\n";
+                content += temp;
+            }
+            File.WriteAllText("output_animinfo.txt", content);
         }
     }
 }

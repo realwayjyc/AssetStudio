@@ -25,6 +25,7 @@
 
         <Label Grid.Row="0" Grid.Column="0" Content="AnimatorController name:" Width="150" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
         <TextBox Grid.Row="0" Grid.Column="0" Text="True" x:Name="txtAnimatorControllerName" Margin="150,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+        <Button Content="Output" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Width="50" Margin="0,2,0,2" Click="Output_Click"/>
         <TabControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
             <TabItem Header="Layers">
                 <Grid>
