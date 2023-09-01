@@ -84,12 +84,19 @@ namespace AssetStudio
 
         private static T[] ReadArray<T>(Func<T> del, int length)
         {
-            var array = new T[length];
-            for (int i = 0; i < length; i++)
+            try
             {
-                array[i] = del();
+                var array = new T[length];
+                for (int i = 0; i < length; i++)
+                {
+                    array[i] = del();
+                }
+                return array;
             }
-            return array;
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         public static bool[] ReadBooleanArray(this BinaryReader reader)
@@ -99,7 +106,17 @@ namespace AssetStudio
 
         public static byte[] ReadUInt8Array(this BinaryReader reader)
         {
-            return reader.ReadBytes(reader.ReadInt32());
+            try
+            {
+                int value = reader.ReadInt32();
+                byte[] ret = reader.ReadBytes(value);
+                return ret;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
         }
 
         public static ushort[] ReadUInt16Array(this BinaryReader reader)

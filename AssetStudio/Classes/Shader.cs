@@ -898,6 +898,9 @@ namespace AssetStudio
             m_CustomEditorName = reader.ReadAlignedString();
             m_FallbackName = reader.ReadAlignedString();
 
+            //Fix error
+            return;
+
             int numDependencies = reader.ReadInt32();
             m_Dependencies = new SerializedShaderDependency[numDependencies];
             for (int i = 0; i < numDependencies; i++)
@@ -966,6 +969,8 @@ namespace AssetStudio
 
         public Shader(ObjectReader reader) : base(reader)
         {
+            //Fix error
+            return;
             if (version[0] == 5 && version[1] >= 5 || version[0] > 5) //5.5 and up
             {
                 m_ParsedForm = new SerializedShader(reader);
@@ -984,6 +989,8 @@ namespace AssetStudio
                 }
                 compressedBlob = reader.ReadUInt8Array();
                 reader.AlignStream();
+
+               
 
                 var m_DependenciesCount = reader.ReadInt32();
                 for (int i = 0; i < m_DependenciesCount; i++)

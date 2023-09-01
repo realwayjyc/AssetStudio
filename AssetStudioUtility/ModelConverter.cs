@@ -652,93 +652,97 @@ namespace AssetStudio
                 iMat.Reflection = new Color(0, 0, 0, 1);
                 iMat.Shininess = 20f;
                 iMat.Transparency = 0f;
-                foreach (var col in mat.m_SavedProperties.m_Colors)
+                if(mat.m_SavedProperties!=null)
                 {
-                    switch (col.Key)
+                    foreach (var col in mat.m_SavedProperties.m_Colors)
                     {
-                        case "_Color":
-                            iMat.Diffuse = col.Value;
-                            break;
-                        case "_SColor":
-                            iMat.Ambient = col.Value;
-                            break;
-                        case "_EmissionColor":
-                            iMat.Emissive = col.Value;
-                            break;
-                        case "_SpecularColor":
-                            iMat.Specular = col.Value;
-                            break;
-                        case "_ReflectColor":
-                            iMat.Reflection = col.Value;
-                            break;
-                    }
-                }
-
-                foreach (var flt in mat.m_SavedProperties.m_Floats)
-                {
-                    switch (flt.Key)
-                    {
-                        case "_Shininess":
-                            iMat.Shininess = flt.Value;
-                            break;
-                        case "_Transparency":
-                            iMat.Transparency = flt.Value;
-                            break;
-                    }
-                }
-
-                //textures
-                iMat.Textures = new List<ImportedMaterialTexture>();
-                foreach (var texEnv in mat.m_SavedProperties.m_TexEnvs)
-                {
-                    if (!texEnv.Value.m_Texture.TryGet<Texture2D>(out var m_Texture2D)) //TODO other Texture
-                    {
-                        continue;
-                    }
-
-                    var texture = new ImportedMaterialTexture();
-                    iMat.Textures.Add(texture);
-
-                    int dest = -1;
-                    if (texEnv.Key == "_MainTex")
-                        dest = 0;
-                    else if (texEnv.Key == "_BumpMap")
-                        dest = 3;
-                    else if (texEnv.Key.Contains("Specular"))
-                        dest = 2;
-                    else if (texEnv.Key.Contains("Normal"))
-                        dest = 1;
-
-                    texture.Dest = dest;
-
-                    var ext = $".{imageFormat.ToString().ToLower()}";
-                    if (textureNameDictionary.TryGetValue(m_Texture2D, out var textureName))
-                    {
-                        texture.Name = textureName;
-                    }
-                    else if (ImportedHelpers.FindTexture(m_Texture2D.m_Name + ext, TextureList) != null) //已有相同名字的图片
-                    {
-                        for (int i = 1; ; i++)
+                        switch (col.Key)
                         {
-                            var name = m_Texture2D.m_Name + $" ({i}){ext}";
-                            if (ImportedHelpers.FindTexture(name, TextureList) == null)
-                            {
-                                texture.Name = name;
-                                textureNameDictionary.Add(m_Texture2D, name);
+                            case "_Color":
+                                iMat.Diffuse = col.Value;
                                 break;
-                            }
+                            case "_SColor":
+                                iMat.Ambient = col.Value;
+                                break;
+                            case "_EmissionColor":
+                                iMat.Emissive = col.Value;
+                                break;
+                            case "_SpecularColor":
+                                iMat.Specular = col.Value;
+                                break;
+                            case "_ReflectColor":
+                                iMat.Reflection = col.Value;
+                                break;
                         }
                     }
-                    else
+
+                    foreach (var flt in mat.m_SavedProperties.m_Floats)
                     {
-                        texture.Name = m_Texture2D.m_Name + ext;
-                        textureNameDictionary.Add(m_Texture2D, texture.Name);
+                        switch (flt.Key)
+                        {
+                            case "_Shininess":
+                                iMat.Shininess = flt.Value;
+                                break;
+                            case "_Transparency":
+                                iMat.Transparency = flt.Value;
+                                break;
+                        }
                     }
 
-                    texture.Offset = texEnv.Value.m_Offset;
-                    texture.Scale = texEnv.Value.m_Scale;
-                    ConvertTexture2D(m_Texture2D, texture.Name);
+                    //textures
+                    iMat.Textures = new List<ImportedMaterialTexture>();
+                    foreach (var texEnv in mat.m_SavedProperties.m_TexEnvs)
+                    {
+                        if (!texEnv.Value.m_Texture.TryGet<Texture2D>(out var m_Texture2D)) //TODO other Texture
+                        {
+                            continue;
+                        }
+
+                        var texture = new ImportedMaterialTexture();
+                        iMat.Textures.Add(texture);
+
+                        int dest = -1;
+                        if (texEnv.Key == "_MainTex")
+                            dest = 0;
+                        else if (texEnv.Key == "_BumpMap")
+                            dest = 3;
+                        else if (texEnv.Key.Contains("Specular"))
+                            dest = 2;
+                        else if (texEnv.Key.Contains("Normal"))
+                            dest = 1;
+
+                        texture.Dest = dest;
+
+                        var ext = $".{imageFormat.ToString().ToLower()}";
+                        if (textureNameDictionary.TryGetValue(m_Texture2D, out var textureName))
+                        {
+                            texture.Name = textureName;
+                        }
+                        else if (ImportedHelpers.FindTexture(m_Texture2D.m_Name + ext, TextureList) != null) //已有相同名字的图片
+                        {
+                            for (int i = 1; ; i++)
+                            {
+                                var name = m_Texture2D.m_Name + $" ({i}){ext}";
+                                if (ImportedHelpers.FindTexture(name, TextureList) == null)
+                                {
+                                    texture.Name = name;
+                                    textureNameDictionary.Add(m_Texture2D, name);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            texture.Name = m_Texture2D.m_Name + ext;
+                            textureNameDictionary.Add(m_Texture2D, texture.Name);
+                        }
+
+                        texture.Offset = texEnv.Value.m_Offset;
+                        texture.Scale = texEnv.Value.m_Scale;
+                        ConvertTexture2D(m_Texture2D, texture.Name);
+                    }
                 }
+                
 
                 MaterialList.Add(iMat);
             }

@@ -69,6 +69,9 @@ namespace AssetStudio
         {
             m_Shader = new PPtr<Shader>(reader);
 
+            //Fix error
+            return;
+
             if (version[0] == 4 && version[1] >= 1) //4.x
             {
                 var m_ShaderKeywords = reader.ReadStringArray();
@@ -101,7 +104,7 @@ namespace AssetStudio
                     var second = reader.ReadAlignedString();
                 }
             }
-
+           
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
             {
                 var disabledShaderPasses = reader.ReadStringArray();

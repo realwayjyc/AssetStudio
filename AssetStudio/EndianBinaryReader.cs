@@ -39,7 +39,15 @@ namespace AssetStudio
                 Read(buffer, 0, 4);
                 return BinaryPrimitives.ReadInt32BigEndian(buffer);
             }
-            return base.ReadInt32();
+            try
+            {
+                int readed = base.ReadInt32();
+                return readed;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
         }
 
         public override long ReadInt64()

@@ -309,30 +309,33 @@ namespace AssetStudio.FbxInterop
                         materialIndex = AsFbxAddMaterialToFrame(frameNode, pMat);
 
                         var hasTexture = false;
-
-                        foreach (var texture in mat.Textures)
+                        if(mat.Textures!=null)
                         {
-                            var tex = ImportedHelpers.FindTexture(texture.Name, textureList);
-                            var pTexture = ExportTexture(tex);
-
-                            if (pTexture != IntPtr.Zero)
+                            foreach (var texture in mat.Textures)
                             {
-                                switch (texture.Dest)
+                                var tex = ImportedHelpers.FindTexture(texture.Name, textureList);
+                                var pTexture = ExportTexture(tex);
+
+                                if (pTexture != IntPtr.Zero)
                                 {
-                                    case 0:
-                                    case 1:
-                                    case 2:
-                                    case 3:
-                                        {
-                                            AsFbxLinkTexture(texture.Dest, pTexture, pMat, texture.Offset.X, texture.Offset.Y, texture.Scale.X, texture.Scale.Y);
-                                            hasTexture = true;
+                                    switch (texture.Dest)
+                                    {
+                                        case 0:
+                                        case 1:
+                                        case 2:
+                                        case 3:
+                                            {
+                                                AsFbxLinkTexture(texture.Dest, pTexture, pMat, texture.Offset.X, texture.Offset.Y, texture.Scale.X, texture.Scale.Y);
+                                                hasTexture = true;
+                                                break;
+                                            }
+                                        default:
                                             break;
-                                        }
-                                    default:
-                                        break;
+                                    }
                                 }
                             }
                         }
+                        
 
                         if (hasTexture)
                         {
